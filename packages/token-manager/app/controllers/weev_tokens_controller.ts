@@ -45,13 +45,13 @@ export default class WeevTokensController {
 
     if (!userId) {
       return response.status(404).send({
-        code: "NOT AUTHORIZED",
+        code: "USER_ID_NOT_FOUND",
         message: "No user id"
       });
     }
 
-    return response.status(200).send({
-      success: true
+    return response.status(200).json({
+      userId
     });
   }
 }

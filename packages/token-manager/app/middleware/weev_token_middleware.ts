@@ -1,5 +1,5 @@
 import type { HttpContext } from "@adonisjs/core/http";
-import { Clerk } from "@clerk/clerk-sdk-node";
+import { Clerk, Session } from "@clerk/clerk-sdk-node";
 import { NextFn } from "@adonisjs/core/types/http";
 
 const clerkClient = Clerk({
@@ -17,65 +17,44 @@ export default class WeevTokenMiddleware {
       });
     }
 
-    const user = await this._verifyToken(token, ctx);
+    try {
+      const user = await this._verifyToken(token);
 
-    if (!user) {
+      if (!user) {
+        return ctx.response.status(401).send({
+          code: "UNAUTHORIZED",
+          message: "Only authenticated users can save weev token"
+        });
+      }
+
+      /**
+       * Call next method in the pipeline and return its output
+       */
+      return next();
+    } catch (error) {
       return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: "Only authenticated users can save weev token"
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Reason: ${error}`
       });
     }
-
-    /**
-     * Call next method in the pipeline and return its output
-     */
-    return next();
   }
 
-  private async _verifyToken(token: string, ctx: HttpContext) {
+  private async _verifyToken(token: string): Promise<Session | null> {
     const jwtToken = await clerkClient.verifyToken(token);
 
-    if (!jwtToken) {
-      return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: "Only authenticated users can save weev token"
-      });
-    }
+    if (!jwtToken) return null;
 
     const client = await clerkClient.clients.verifyClient(jwtToken.__raw);
 
     /**
      * Make sure the client exists in our clerk sessions.
      */
-    if (!client) {
-      return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: "Only authenticated users can save weev token"
-      });
-    }
+    if (!client) return null;
 
     const sessionId = client.lastActiveSessionId;
 
-    if (!sessionId) {
-      return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: "Only authenticated users can save weev token"
-      });
-    }
+    if (!sessionId) return null;
 
-    const session = await clerkClient.sessions.verifySession(sessionId, token);
-
-    /**
-     * Make sure the session exists
-     * and is valid a valid one.
-     */
-    if (!session) {
-      return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: "Only authenticated users can save weev token"
-      });
-    }
-
-    return session;
+    return await clerkClient.sessions.verifySession(sessionId, token);
   }
 }
