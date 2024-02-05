@@ -10,7 +10,6 @@ const clerkClient = Clerk({
 export default class WeevTokenMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
     const token = ctx.request.headers()["authorization"];
-
     if (!token) {
       throw new UnAuthorizedException("The token does not exist. Did you forget to add it in your headers?", {
         code: UnAuthorizedErrorCodes.TOKEN_NOT_FOUND,
@@ -20,7 +19,6 @@ export default class WeevTokenMiddleware {
 
     try {
       const sanitizedToken = token.replace("Bearer ", "");
-
       /**
        * Verify the token from clerk-auth.
        */

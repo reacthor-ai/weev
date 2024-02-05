@@ -35,5 +35,6 @@ router.use([() => import("@adonisjs/core/bodyparser_middleware")]);
  * the routes or the routes group.
  */
 export const middleware = router.named({
-  weevToken: () => import("#middleware/weev_token_middleware")
+  weevToken: () => import("#middleware/weev_token_middleware"),
+  shopeeToken: () => import("#middleware/weev_integrations_token_middleware")
 });
