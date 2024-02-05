@@ -1,6 +1,7 @@
 import type { HttpContext } from "@adonisjs/core/http";
-import { Clerk, Session } from "@clerk/clerk-sdk-node";
+import { Clerk } from "@clerk/clerk-sdk-node";
 import { NextFn } from "@adonisjs/core/types/http";
+import UnAuthorizedException, { UnAuthorizedErrorCodes } from "#exceptions/un_authorized_exception";
 
 const clerkClient = Clerk({
   secretKey: process.env.CLERK_SECRET_KEY
@@ -11,50 +12,29 @@ export default class WeevTokenMiddleware {
     const token = ctx.request.headers()["authorization"];
 
     if (!token) {
-      return ctx.response.status(401).send({
-        code: "UNAUTHORIZED",
-        message: `No Token`
+      throw new UnAuthorizedException("The token does not exist. Did you forget to add it in your headers?", {
+        code: UnAuthorizedErrorCodes.TOKEN_NOT_FOUND,
+        status: 401
       });
     }
 
     try {
-      const user = await this._verifyToken(token);
-
-      if (!user) {
-        return ctx.response.status(401).send({
-          code: "UNAUTHORIZED",
-          message: "Only authenticated users can save weev token"
-        });
-      }
+      const sanitizedToken = token.replace("Bearer ", "");
 
       /**
-       * Call next method in the pipeline and return its output
+       * Verify the token from clerk-auth.
+       */
+      await clerkClient.verifyToken(sanitizedToken);
+
+      /**
+       * Call next method in the pipeline.
        */
       return next();
     } catch (error) {
-      return ctx.response.status(401).send({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Reason: ${error}`
+      throw new UnAuthorizedException(`${error}`, {
+        status: 500,
+        code: UnAuthorizedErrorCodes.INTERNAL_SERVER_ERROR
       });
     }
-  }
-
-  private async _verifyToken(token: string): Promise<Session | null> {
-    const jwtToken = await clerkClient.verifyToken(token);
-
-    if (!jwtToken) return null;
-
-    const client = await clerkClient.clients.verifyClient(jwtToken.__raw);
-
-    /**
-     * Make sure the client exists in our clerk sessions.
-     */
-    if (!client) return null;
-
-    const sessionId = client.lastActiveSessionId;
-
-    if (!sessionId) return null;
-
-    return await clerkClient.sessions.verifySession(sessionId, token);
   }
 }

@@ -6,8 +6,7 @@ import vine from "@vinejs/vine";
 export const createWeevTokenValidator = vine.compile(
   vine.object({
     userId: vine.string(),
-    integrations: vine.enum(["LAZADA", "SHOPEE"]),
-    uuid: vine.string()
+    integrations: vine.enum(["LAZADA", "SHOPEE"])
   })
 );
 

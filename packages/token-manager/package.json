@@ -53,7 +53,8 @@
     "@adonisjs/redis": "^8.0.1",
     "@clerk/clerk-sdk-node": "^4.13.7",
     "@vinejs/vine": "^1.7.1",
-    "reflect-metadata": "^0.2.1"
+    "reflect-metadata": "^0.2.1",
+    "uuidv4": "^6.2.13"
   },
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/app"
