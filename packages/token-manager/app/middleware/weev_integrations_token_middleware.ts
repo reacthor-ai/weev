@@ -5,6 +5,7 @@ import { CreateShopeeTokenValidatorType, inputQueryShopeeApiPath } from "#valida
 import RedisException, { RedisErrorCodes } from "#exceptions/redis_exception";
 import * as crypto from "crypto";
 import { NextFn } from "@adonisjs/core/types/http";
+import * as process from "process";
 
 export default class WeevIntegrationsTokenMiddleware {
   async handle(ctx: HttpContext, next: NextFn) {
@@ -60,8 +61,8 @@ export default class WeevIntegrationsTokenMiddleware {
    * More details: https://open.shopee.com/documents?module=87&type=2&id=58&version=2
    */
   private _generateSignToken(api_path: string) {
-    const partner_id = "2323232";
-    const partner_key = "23232323232";
+    const partner_id = process.env.PARTNER_ID;
+    const partner_key = process.env.PARTNER_KEY;
     const timestamp = Math.floor(new Date().getTime() / 1000).toString();
 
     if (!partner_id || !partner_key) {
