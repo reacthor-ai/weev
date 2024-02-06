@@ -31,7 +31,7 @@ export default class ShopeeTokensController {
       const payload = await createShopeeTokenValidator.validate(data);
       const name = `weev-token-shopee-${payload.user_id}`;
 
-      await redis.set(name, JSON.stringify(payload));
+      await redis.set(name, JSON.stringify(payload), "EX", 259200);
 
       return response.status(200).json({
         tokenName: name
@@ -49,7 +49,7 @@ export default class ShopeeTokensController {
       const data = request.all();
       const { endpoint: endpointKey, user_id } = await createShopeeEndpointValidator.validate(data);
 
-      await redis.set(`weev-endpoint-shopee-${user_id}`, endpointKey);
+      await redis.set(`weev-endpoint-shopee-${user_id}`, endpointKey, "EX", 259200);
       return response.status(200).json({
         success: true
       });
