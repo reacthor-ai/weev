@@ -1,6 +1,3 @@
-import {EnqueueLinksOptions} from "@crawlee/core";
-import {BatchAddRequestsResult} from "@crawlee/types";
-import {Page} from "playwright";
 import {BrowserName, Dataset, DeviceCategory, OperatingSystemsName, PlaywrightCrawler} from "crawlee";
 import {Params} from "../types.js";
 
@@ -47,7 +44,6 @@ async function enqueueCategoryLinks({page, enqueueLinks}: Params) {
 
   const itemsData = [];
 
-  // await page.locator('li#tab_review > a').scrollIntoViewIfNeeded({timeout: 5000});
   await page.evaluate(() => {
     const reviewTab = document.querySelector('#tab_review > a');
     if (reviewTab) (reviewTab as any).click();

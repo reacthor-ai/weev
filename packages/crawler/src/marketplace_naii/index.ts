@@ -1,7 +1,6 @@
 import {BrowserName, Dataset, DeviceCategory, OperatingSystemsName, PlaywrightCrawler} from "crawlee";
 import {Params} from "../types.js";
-
-const trim = (s: string) => s.trim().replace(/\s+/g, ' ')
+import {trim} from "../util/index.js";
 
 async function enqueueProductDetailPage({page}: Params) {
   await page.waitForSelector('.product-details > h1.product-title')
@@ -110,6 +109,6 @@ export const naiiCrawler = {
       await enqueueCategoriesPage({page, enqueueLinks})
     }
   },
-  maxRequestsPerCrawl: 60, // Limit the number of requests to prevent infinite crawling in large sites,
+  maxRequestsPerCrawl: 65, // Limit the number of requests to prevent infinite crawling in large sites,
   // headless: false
 } satisfies PlaywrightCrawler
