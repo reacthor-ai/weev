@@ -1,116 +1,164 @@
-import {BrowserName, Dataset, DeviceCategory, OperatingSystemsName, PlaywrightCrawler} from "crawlee";
-import {Params} from "../types.js";
-import {
-  getAttributeValue,
-  getFulfilledValue,
-  getTextContent,
-  MarketPlaceLabel,
-  scrollToAndWaitForSelector,
-  trim
-} from "../util/index.js";
+import {Dataset, PlaywrightCrawler} from "crawlee";
+import {Params, ProductsResults} from "../types.js";
+import {getTextContent, MarketPlaceLabel, trim} from "../util/index.js";
+import {defaultBrowserPoolOptions} from "../util/constant.js";
 
 // Main function
-export async function enqueueProductDetailPage({page}: Pick<Params, 'page'>) {
-  await page.waitForSelector('.product__header > header > h1.sf-heading__title');
+async function enqueueProductDetailPage({page}: Pick<Params, 'page'>) {
+  await page.waitForSelector('.product__main');
 
   // General Info
-  const [currency, price, availability, title, description] = await Promise.all([
-    getAttributeValue(page, 'meta[itemprop="priceCurrency"]', 'content'),
-    getAttributeValue(page, 'meta[itemprop="price"]', 'content'),
-    getAttributeValue(page, 'meta[itemprop="availability"]', 'content'),
-    getTextContent(page, '.product__header > header > h1.sf-heading__title'),
-    getTextContent(page, 'div[itemprop="description"]'),
-  ]);
+  let title = ''
+  try {
+    title = await getTextContent(page, 'h1.sf-heading__title')
+  } catch (error) {
+    console.log(`Error getting title`, error)
+  }
 
-  // Gallery Images
-  const images = await page.$$eval('ul.product-gallery__images > li.product-gallery__image img', imgs => imgs.map(img => img.src ?? ''));
+  let images = []
+  try {
+    images = await page.$$eval('ul.product-gallery__images > li.product-gallery__image img', imgs =>
+      imgs.map(img => img.src ?? '')
+    );
+  } catch (error) {
+    console.log(`Error images, `, images)
+  }
 
-  // Additional properties
-  const propertySelectors = [
-    '.product__property:nth-of-type(2).a-product-attribute-base > .sf-property > span.sf-property__value',
-    '.product__property:nth-of-type(3).a-product-attribute-base > .sf-property > span.sf-property__value',
-    '.product__property:nth-of-type(4).a-product-attribute-base > .sf-property > span.sf-property__value',
-    '.product__size-content > .product__size-header'
-  ];
-  const propertiesResults = await Promise.allSettled(propertySelectors.map(selector => getTextContent(page, selector)));
-  const [lining, sheerness, pockets, additionalProperty] = propertiesResults.map(result => getFulfilledValue(result));
+  let currentPrice = '', discountedPrice = ''
+  try {
+    let isDiscountedPrice = await page.locator('.sf-price').innerHTML()
+    if (isDiscountedPrice.includes('span')) {
+      currentPrice = await page.locator('.sf-price > span.sf-price__value').innerText() ?? ''
+    } else {
+      currentPrice = await page.locator('.sf-price__value-special-container > .sf-price__value').innerText() ?? ''
+      discountedPrice = await page.locator('.sf-price__value.sf-price__value--old').textContent() ?? ''
+    }
 
-  // Size & Fit
-  await page.click('button.sf-button--pure.sf-tabs__title >> text="Size & Fit"');
-  await scrollToAndWaitForSelector(page, '.sf-tabs__content .a-product-size-fit');
+  } catch (error) {
+    console.log(`Error when getting prices`, error)
+  }
 
-  const modelDetailsSelectors = [
-    '.model-title b',
-    '.model-config > .config-row:nth-of-type(1) > .config-item:nth-of-type(1) > .config-value',
-    '.model-config > .config-row:nth-of-type(1) > .config-item:nth-of-type(2) > .config-value',
-    '.model-config > .config-row:nth-of-type(2) > .config-item:nth-of-type(1) > .config-value',
-    '.model-config > .config-row:nth-of-type(2) > .config-item:nth-of-type(2) > .config-value'
-  ];
-  const modelDetailsResults = await Promise.allSettled(modelDetailsSelectors.map(selector => getTextContent(page, selector)));
-  const [size, height, bust, waist, hip] = modelDetailsResults.map(result => getFulfilledValue(result));
+  let description: string[] = []
+  try {
+    description = await page.$$eval('#details > .product__tab-details > .product__description', item => {
+      return item.map(items => items.innerText.trim());
+    })
+
+  } catch (error) {
+    console.log(`Error [description]`, error)
+  }
+
+  let sizeAndFit: unknown[] = []
+  try {
+    await page.evaluate(() => {
+      const overlay = document.getElementById('wps_popup');
+      if (overlay) {
+        overlay.style.pointerEvents = 'none';
+      }
+    });
+    await page.click('#m-product-additional-info > button.sf-button.sf-button--pure.sf-tabs__title >> text="Size & Fit"');
+
+    sizeAndFit = await page.$$eval('.product__size-content', item => {
+      return item.map(items => items.innerText.trim());
+    })
+
+  } catch (error) {
+    console.log(`Error [size and fit], `, error)
+  }
+
+  let materials: unknown[] = []
+  try {
+    await page.evaluate(() => {
+      const overlay = document.getElementById('wps_popup');
+      if (overlay) {
+        overlay.style.pointerEvents = 'none';
+      }
+    });
+
+    await page.click('#m-product-additional-info > button.sf-button.sf-button--pure.sf-tabs__title >> text="Material & Care"');
+
+    materials = await page.$$eval('.product__material-care-header', item => {
+      return item.map(items => items.innerText.trim());
+    })
+
+  } catch (error) {
+    console.log(`Error [materials], `, error)
+  }
 
   // Ratings
-  await scrollToAndWaitForSelector(page, '#o-product-review');
-  const rating = await getTextContent(page, '.review-summary > .m-star-rating-minimal > span.average-rating');
+  let reviews: unknown[] = []
+  let rating = ''
+  try {
+    await page.waitForSelector('#o-product-review', {timeout: 5000})
 
-  // Reviews
-  const reviews = await page.$$eval('.review-item', (reviews) => {
-    return reviews.map((review) => {
-      const title = review.querySelector('.review-heading')?.textContent.trim();
-      const fit = review.querySelector('.fit-rating')?.textContent.trim().replace('FIT : ', '');
-      const variant = review.querySelector('.variant')?.textContent.trim();
-      const description = review.querySelector('.review-body')?.textContent.trim();
-      const locationDate = review.querySelector('.review-date i')?.textContent.trim().split('|').map(part => part.trim());
-      const location = locationDate?.length > 2 ? locationDate[2] : ''; // Assuming the third part is the location
-      const date = locationDate?.length > 1 ? locationDate[1] : ''; // Assuming the second part is the date
+    rating = await getTextContent(page, '.review-summary > .m-star-rating-minimal > span.average-rating');
 
-      return {title, fit, variant, description, location, date};
+    reviews = await page.$$eval('.review-item', (reviews) => {
+      return reviews.map((review) => {
+        const title = review.querySelector('.review-heading')?.textContent.trim();
+        const fit = review.querySelector('.fit-rating')?.textContent.trim().replace('FIT : ', '');
+        const variant = review.querySelector('.variant')?.textContent.trim();
+        const description = review.querySelector('.review-body')?.textContent.trim();
+        const locationDate = review.querySelector('.review-date i')?.textContent.trim().split('|').map(part => part.trim());
+        const location = locationDate?.length > 2 ? locationDate[2] : ''; // Assuming the third part is the location
+        const date = locationDate?.length > 1 ? locationDate[1] : ''; // Assuming the second part is the date
+
+        return {title, fit, variant, description, location, date};
+      });
     });
-  });
+  } catch (error) {
+    console.log(`Error when getting reviews`, error)
+  }
 
-  // Recommended Products
-  await scrollToAndWaitForSelector(page, '#similarProductsWrapper');
-  const recommendedProducts = await page.$$eval('.sf-product-card', (products) => {
-    return products.map((product) => {
-      const title = product.querySelector('.sf-product-card__title')?.textContent.trim();
-      const subcategory = product.querySelector('.sf-product-card__subcategory')?.textContent.trim();
-      const price = product.querySelector('.sf-price__value--special')?.textContent.trim() || product.querySelector('.sf-price__value')?.textContent.trim();
-      const imageUrl = product.querySelector('.sf-product-card__image-wrapper img')?.src;
-      const productUrl = product.querySelector('.sf-product-card__link')?.href;
+  let recommendedProducts: unknown[] = []
 
-      return {title, subcategory, price, imageUrl, productUrl};
+  try {
+    await page.waitForSelector('#similarProducts', {timeout: 6000})
+
+    recommendedProducts = await page.$$eval('ul > li', (products) => {
+
+      return products.map((product) => {
+        const title = product.querySelector('.sf-product-card__title')?.textContent.trim();
+        const subcategory = product.querySelector('.sf-product-card__subcategory')?.textContent.trim();
+
+        let currentPrice = '', discountedPrice = ''
+        const isDiscountedPrice = product.querySelector('.sf-product-card__price')?.innerHTML ?? ''
+
+        if (isDiscountedPrice.includes('del') || isDiscountedPrice.includes('ins')) {
+          currentPrice = product.querySelector('.sf-price__value.sf-price__value--special')?.textContent?.trim() ?? ''
+          discountedPrice = product.querySelector('.sf-price__value.sf-price__value--old')?.textContent?.trim() ?? ''
+        } else {
+          currentPrice = product.querySelector('.sf-product-card__price')?.textContent?.trim() ?? ''
+        }
+        return {title, subcategory, price: {currentPrice, discountedPrice}};
+      }).filter(ti => typeof ti.title !== 'undefined');
     });
-  });
+  } catch (error) {
+    console.log(`Error when getting recommended products`, error)
+  }
 
   const results = {
-    url: page.url(),
-    currency,
+    currency: 'SGD',
     title: trim(title),
-    price,
-    availability,
-    from: "Singapore",
+    price: {
+      currentPrice,
+      discountedPrice
+    },
     images,
     description,
-    properties: {
-      lining,
-      sheerness,
-      pockets,
-      additionalProperty
-    },
-    model: {
-      size,
-      height: trim(height),
-      bust: trim(bust),
-      waist: trim(waist),
-      hip: trim(hip),
-    },
     rating,
-    recommendedProducts,
+    recommended: recommendedProducts,
     reviews,
-  }
+    marketplace: {
+      sizeAndFit,
+      materials
+    },
+  } satisfies ProductsResults
 
   return results
 }
+
+const CATEGORY_SELECTOR = '.sf-product-card > .sf-product-card__image-wrapper > a.sf-product-card__link'
 
 export async function enqueueCategoryDetailsPage({page, enqueueLinks}: Params) {
   const results = await enqueueProductDetailPage({page})
@@ -121,77 +169,58 @@ export async function enqueueCategoryDetailsPage({page, enqueueLinks}: Params) {
 
   await data.exportToJSON('bonit-batch-1')
 
-  const categoriesListSelector = '.sf-product-card > .sf-product-card__image-wrapper > a.sf-product-card__link'
-  const hasNextPage = await page.$(categoriesListSelector);
+  const hasNextPage = await page.$(CATEGORY_SELECTOR);
   if (hasNextPage) {
     await enqueueLinks({
-      selector: categoriesListSelector,
+      selector: CATEGORY_SELECTOR,
       label: MarketPlaceLabel.CATEGORY
     })
   }
 }
 
-export async function enqueueCategoryPage({page, enqueueLinks}: Params) {
-  await page.waitForSelector('.wps-overlay-close-button')
-
-  await page.click('.wps-overlay-close-button')
-
-  const selectorCategoryPage = '.sf-product-card > .sf-product-card__image-wrapper > a.sf-product-card__link'
-  await page.waitForSelector(selectorCategoryPage)
+async function enqueueCategoryPage({page, enqueueLinks}: Params) {
+  await page.waitForSelector(CATEGORY_SELECTOR)
 
   await enqueueLinks({
     label: MarketPlaceLabel.CATEGORY,
-    selector: selectorCategoryPage
+    selector: CATEGORY_SELECTOR
   })
 }
 
-export const bonitoUrl = 'https://www.lovebonito.com/sg/defined-backless-stick-on-bra.html'
+async function closeBanner({page}: Pick<Params, 'page'>) {
+  try {
+    // Wait for the close button of the banner to be visible. This ensures that the element is not only present in the DOM but also visible to the user.
+    await page.waitForSelector('.wps-overlay-close-button', {state: 'visible', timeout: 10000}); // Adjust the timeout as needed
+
+    // Click the close button to close the banner. The then() block will execute after the click action completes.
+    await page.click('.wps-overlay-close-button');
+
+    console.log('Banner closed, proceeding with data extraction.');
+  } catch (error) {
+    console.log('Banner close button not found or not clickable, proceeding without closing it.');
+  }
+}
+
+export const bonitoUrl = 'https://www.lovebonito.com/sg/shop/apparel-accessories/footwear?sort=stock_in_date%3Adesc&stock.is_in_stock=true'
 
 export const bonitoCrawler = {
-  browserPoolOptions: {
-    preLaunchHooks: [() => {
-      // do something before a browser gets launched
-      //
-      console.log('running pre launch')
-    }],
-    fingerprintOptions: {
-      fingerprintGeneratorOptions: {
-        browsers: [{
-          name: BrowserName.firefox,
-          minVersion: 96,
-        }],
-        devices: [
-          DeviceCategory.desktop,
-        ],
-        operatingSystems: [
-          OperatingSystemsName.macos,
-        ],
-      },
-    },
-  },
+  // @ts-ignore
+  browserPoolOptions: defaultBrowserPoolOptions,
   requestHandler: async ({page, request, enqueueLinks}) => {
     console.log(`Processing: ${request.url}`);
-    try {
-      // Wait for the close button of the banner to be visible. This ensures that the element is not only present in the DOM but also visible to the user.
-      await page.waitForSelector('.wps-overlay-close-button', {state: 'visible', timeout: 10000}); // Adjust the timeout as needed
 
-      // Click the close button to close the banner. The then() block will execute after the click action completes.
-      await page.click('.wps-overlay-close-button');
-
-      console.log('Banner closed, proceeding with data extraction.');
-    } catch (error) {
-      console.log('Banner close button not found or not clickable, proceeding without closing it.');
+    if (request.label === MarketPlaceLabel.CATEGORY) {
+      await enqueueCategoryDetailsPage({
+        page,
+        enqueueLinks
+      })
+    } else {
+      await enqueueCategoryPage({
+        page,
+        enqueueLinks
+      })
     }
-
-// Proceed with your data extraction and storage
-    const results = await enqueueProductDetailPage({page});
-    console.log('🚀🚀 🚀  Got it! Storing product: ', results.title);
-
-    const data = await Dataset.open('bonit-batch');
-    await data.pushData(results);
-
-    await data.exportToJSON('bonit-batch-1');
   },
-  maxRequestsPerCrawl: 3, // Limit the number of requests to prevent infinite crawling in large sites,
-  headless: false
+  maxRequestsPerCrawl: 70, // Limit the number of requests to prevent infinite crawling in large sites,
+  // headless: false
 } satisfies PlaywrightCrawler

@@ -1,6 +1,7 @@
 import {BrowserName, Dataset, DeviceCategory, OperatingSystemsName, PlaywrightCrawler} from "crawlee";
-import {Params} from "../types.js";
+import {Params, ProductsResults} from "../types.js";
 import {trim} from "../util/index.js";
+import {defaultBrowserPoolOptions} from "../util/constant.js";
 
 async function enqueueProductDetailPage({page}: Params) {
   await page.waitForSelector('.product-details > h1.product-title')
@@ -33,14 +34,16 @@ async function enqueueProductDetailPage({page}: Params) {
   }
 
   const results = {
-    url: page.url(),
     title: trim(title),
-    price: trim(price),
+    price: {
+      currentPrice: trim(price),
+      discountedPrice: ''
+    },
     description: trim(description),
-    image: `https:${coverImg}`,
-    recommendedProducts, // not working,
-    testing: {value: itemCount}
-  }
+    images: [`https:${coverImg}`],
+    recommended: recommendedProducts,
+    currency: 'SGD'
+  } satisfies ProductsResults
 
   return results
 }
@@ -75,25 +78,11 @@ async function enqueueCategoriesPage({page, enqueueLinks}: Params) {
   })
 }
 
+export const naiiUrl = 'https://naiise.com/collections/java-eco-project'
+
 export const naiiCrawler = {
   // @ts-ignore
-  browserPoolOptions: {
-    useFingerprints: true, // this is the default
-    fingerprintOptions: {
-      fingerprintGeneratorOptions: {
-        browsers: [{
-          name: BrowserName.edge,
-          minVersion: 96,
-        }],
-        devices: [
-          DeviceCategory.desktop,
-        ],
-        operatingSystems: [
-          OperatingSystemsName.windows,
-        ],
-      },
-    },
-  },
+  browserPoolOptions: defaultBrowserPoolOptions,
   requestHandler: async ({page, request, enqueueLinks}) => {
     console.log(`Processing: ${request.url}`);
     if (request.label === 'PRODUCT_DETAIL') {
@@ -109,6 +98,6 @@ export const naiiCrawler = {
       await enqueueCategoriesPage({page, enqueueLinks})
     }
   },
-  maxRequestsPerCrawl: 65, // Limit the number of requests to prevent infinite crawling in large sites,
+  maxRequestsPerCrawl: 80, // Limit the number of requests to prevent infinite crawling in large sites,
   // headless: false
 } satisfies PlaywrightCrawler

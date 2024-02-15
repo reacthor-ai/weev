@@ -1,5 +1,7 @@
-import {BrowserName, Dataset, DeviceCategory, OperatingSystemsName, PlaywrightCrawler} from "crawlee";
-import {Params} from "../types.js";
+import {Dataset, PlaywrightCrawler} from "crawlee";
+import {Params, ProductsResults} from "../types.js";
+import {defaultBrowserPoolOptions} from "../util/constant.js";
+import {getFulfilledValue, getTextContent} from "../util/index.js";
 
 /**
  * ONLY RUN THIS: IF you only want images, product detail, and price.
@@ -14,21 +16,29 @@ async function enqueueCategoryLinks({page, enqueueLinks}: Params) {
   let imageCount = 0;
   const maxImages = 3;
 
-  await page.route('**/*.{png,jpg,jpeg}', (route) => {
-    if (imageCount < maxImages) {
-      const requestUrl = route.request().url();
-      imgs.push(requestUrl);
-      imageCount++;
-    }
-    route.continue(); // Continue the route whether the image URL is stored or not
-  });
+  try {
+    await page.route('**/*.{png,jpg,jpeg}', (route) => {
+      if (imageCount < maxImages) {
+        const requestUrl = route.request().url();
+        imgs.push(requestUrl);
+        imageCount++;
+      }
+      route.continue(); // Continue the route whether the image URL is stored or not
+    });
+  } catch (error) {
+    console.log(`Error imgs`, error)
+  }
 
   /**
    * General Information
    */
-  const productTitle = await page.locator('.goods-product__title > h2.name',).textContent()
-  const dataPrice = await page.locator('#txt_qprice').getAttribute('data-price') ?? ''
-  const productFrom = await page.locator('h3.col-title:has-text("Delivers From") + div.col').textContent() ?? '';
+  const propertySelectors = [
+    '.goods-product__title > h2.name',
+    '#txt_qprice',
+    'h3.col-title:has-text("Delivers From") + div.col'
+  ];
+  const propertiesResults = await Promise.allSettled(propertySelectors.map(selector => getTextContent(page, selector)));
+  const [productTitle, dataPrice, productFrom] = propertiesResults.map(result => getFulfilledValue(result));
 
   const [soldResult, percentResult, reviewersResult, customerSatisfiedResult] = await Promise.allSettled([
     page.locator('div.list:has(h3.list__title:has-text("Sold")) p.list__desc strong').textContent(),
@@ -49,54 +59,61 @@ async function enqueueCategoryLinks({page, enqueueLinks}: Params) {
     if (reviewTab) (reviewTab as any).click();
   });
 
-  await page.waitForSelector('ul#ul_list > li');
+  try {
+    await page.waitForSelector('ul#ul_list > li');
 
-  const itemCount = await page.locator('ul#ul_list > li').count();
+    const itemCount = await page.locator('ul#ul_list > li').count();
 
-  // Loop through each item and extract the data
-  for (let i = 0; i < itemCount; i++) {
-    const itemData = await Promise.allSettled([
-      page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .tit a`).textContent(),
-      page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .rv`).textContent(),
-      page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .info .date`).textContent(),
-      page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .tit .rate-star .on`).evaluate(node => node.style.width),
-      page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .info .by`).textContent(),
-    ]);
+    // Loop through each item and extract the data
+    for (let i = 0; i < itemCount; i++) {
+      const itemData = await Promise.allSettled([
+        page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .tit a`).textContent(),
+        page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .rv`).textContent(),
+        page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .info .date`).textContent(),
+        page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .tit .rate-star .on`).evaluate(node => node.style.width),
+        page.locator(`ul#ul_list > li:nth-of-type(${i + 1}) .rv_area .info .by`).textContent(),
+      ]);
 
-    // Extract values from the settled promises and create an object for the item
-    let title = itemData[0].status === 'fulfilled' ? itemData[0].value : '';
-    let description = itemData[1].status === 'fulfilled' ? itemData[1].value : '';
-    let date = itemData[2].status === 'fulfilled' ? itemData[2].value : '';
-    let star = itemData[3].status === 'fulfilled' ? itemData[3].value : ''; // This will be a percentage, e.g., "100%"
-    let location = itemData[4].status === 'fulfilled' ? itemData[4].value : '';
+      // Extract values from the settled promises and create an object for the item
+      let title = itemData[0].status === 'fulfilled' ? itemData[0].value : '';
+      let description = itemData[1].status === 'fulfilled' ? itemData[1].value : '';
+      let date = itemData[2].status === 'fulfilled' ? itemData[2].value : '';
+      let star = itemData[3].status === 'fulfilled' ? itemData[3].value : ''; // This will be a percentage, e.g., "100%"
+      let location = itemData[4].status === 'fulfilled' ? itemData[4].value : '';
 
-    const cleanedData = {
-      title: title?.trim(),
-      description: description?.replace(/[\n\t]+/g, ' ').trim(),
-      date: date?.trim(),
-      star: star?.trim(),
-      location: location?.replace(/[\n\t]+/g, ' ').trim()
-    };
+      const cleanedData = {
+        title: title?.trim(),
+        description: description?.replace(/[\n\t]+/g, ' ').trim(),
+        date: date?.trim(),
+        star: star?.trim(),
+        location: location?.replace(/[\n\t]+/g, ' ').trim()
+      };
 
-    // Push the item data object into the itemsData array
-    itemsData.push(cleanedData);
+      // Push the item data object into the itemsData array
+      itemsData.push(cleanedData);
+    }
+  } catch (error) {
+    console.log(`Error when getting the item data`, error)
   }
 
   const results = {
-    url: page.url(),
     title: productTitle,
-    image: imgs,
-    price: dataPrice,
-    from: productFrom,
-    recommended: {
-      percent,
-      reviewers
+    images: imgs,
+    price: {
+      currentPrice: dataPrice
     },
-    sold,
-    customer_satisfied,
+    marketplace: {
+      percent,
+      from: productFrom,
+      sold,
+      customer_satisfied,
+      noOfReviews: reviewers
+    },
     reviews: itemsData,
-    type: 'best-selling'
-  }
+    currency: 'SGD',
+    description: '',
+    recommended: []
+  } satisfies ProductsResults
 
   console.log('🚀🚀 🚀  Got it! Storing product: ', results.title)
   const data = await Dataset.open('qoo10-products');
@@ -127,23 +144,7 @@ export const url = `https://www.qoo10.sg/gmkt.inc/BestSellers/?g=3&banner_no=120
 
 export const qooCrawler = {
   // @ts-ignore
-  browserPoolOptions: {
-    useFingerprints: true, // this is the default
-    fingerprintOptions: {
-      fingerprintGeneratorOptions: {
-        browsers: [{
-          name: BrowserName.edge,
-          minVersion: 96,
-        }],
-        devices: [
-          DeviceCategory.desktop,
-        ],
-        operatingSystems: [
-          OperatingSystemsName.windows,
-        ],
-      },
-    },
-  },
+  browserPoolOptions: defaultBrowserPoolOptions,
   requestHandler: async ({page, request, enqueueLinks}) => {
     console.log(`Processing: ${request.url}`);
 
