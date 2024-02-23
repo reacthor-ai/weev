@@ -156,7 +156,7 @@ async function enqueueCategoryPage({page, enqueueLinks}: Params) {
   })
 }
 
-export const castellUrl = 'https://www.castlery.com/sg/sofas/3-seater-sofas'
+export const castellUrl = 'https://www.castlery.com/sg/chairs-benches/armchairs'
 
 export const castellCrawler = {
   // @ts-ignore
@@ -177,6 +177,6 @@ export const castellCrawler = {
       await enqueueCategoryPage({page, enqueueLinks})
     }
   },
-  maxRequestsPerCrawl: 70, // Limit the number of requests to prevent infinite crawling in large sites,
+  maxRequestsPerCrawl: 80, // Limit the number of requests to prevent infinite crawling in large sites,
   // headless: false
 } satisfies PlaywrightCrawler

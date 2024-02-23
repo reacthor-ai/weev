@@ -6,19 +6,35 @@ type TrainingResults = {
 }
 
 const cleanDuplicates = async (data: Dataset<Dictionary>) => {
-  const uniqueItems = new Map<string, { title: string; }>();
+  const uniqueItems = new Map<string, string>();
 
   await data.forEach((item) => {
     const identifier = item.title;
 
     if (!uniqueItems.has(identifier)) {
-      uniqueItems.set(identifier, {
-        title: item.title,
-      });
+
+      if (item?.images && item.images.length > 0) {
+        if (item?.recommended && item.recommended.length > 0) {
+          item.recommended.map((pro) => {
+            if ('image' in pro || 'images' in pro) {
+              uniqueItems.set(identifier, pro?.image);
+              if (pro?.images && pro.images.length > 0) {
+                pro?.images.map(i => {
+                  uniqueItems.set(identifier, i);
+                })
+              }
+            }
+          })
+        }
+
+        item.images.map((img: string) => {
+          uniqueItems.set(identifier, img);
+        })
+      }
     }
   });
 
-  return Array.from(uniqueItems.values()).filter(i => i.title);
+  return Array.from(uniqueItems.values()).filter(t => t !== '');
 }
 
 async function cleanData() {
@@ -47,15 +63,13 @@ async function cleanData() {
   ];
 
   try {
-    const cleanDataSet = await Dataset.open('clean-data-set')
+    const cleanDataSet = await Dataset.open('prompt-image-data-set')
 
-    for (const item of combinedData) {
-      await cleanDataSet.pushData({
-        "title": item.title
-      });
+    for (const image of combinedData) {
+      await cleanDataSet.pushData({image});
     }
 
-    await cleanDataSet.exportToCSV('products-sustainable-title', {
+    await cleanDataSet.exportToJSON('products-sustainable-image', {
       skipEmpty: true
     })
   } catch (error) {
