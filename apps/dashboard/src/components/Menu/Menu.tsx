@@ -7,9 +7,9 @@ import Image from 'next/image'
 import weevLogoSvg from '../../../public/weev-logo.svg'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
 import { Nav } from '@/components/ui/nav'
-import { FolderOpenIcon, HomeIcon, PencilIcon, SettingsIcon, SpeakerIcon } from 'lucide-react'
+import { FolderOpenIcon, HomeIcon, MessageCircleIcon, SettingsIcon, SpeakerIcon } from 'lucide-react'
 
-const defaultLayout = [75, 440, 655]
+const defaultLayout = [60, 440, 655]
 
 type MenuProps = {
   children?: ReactNode
@@ -68,10 +68,10 @@ export const Menu = (props: MenuProps) => {
                 href: NAVIGATION.BRAND_VOICE
               },
               {
-                title: 'Content Library',
-                icon: PencilIcon,
+                title: 'Chat',
+                icon: MessageCircleIcon,
                 variant: 'ghost',
-                href: NAVIGATION.CONTENT_LIBRARY
+                href: NAVIGATION.CHAT
               },
               {
                 title: 'Settings',

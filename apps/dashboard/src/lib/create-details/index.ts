@@ -1,0 +1,1 @@
+export { CreateDetails } from './CreateDetails'

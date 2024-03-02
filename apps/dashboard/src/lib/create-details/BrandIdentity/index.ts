@@ -1,0 +1,1 @@
+export { BrandIdentityCreateDetails } from './BrandIdentity'
