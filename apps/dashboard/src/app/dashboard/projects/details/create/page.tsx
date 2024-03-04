@@ -1,7 +1,9 @@
 import { PageHeader } from '@/components/PageHeader'
-import { CreateDetails } from '@/lib/create-details'
+import { ProjectCreateDetails } from '@/lib/create-details/Projects'
+import { getUser } from '@/database/user'
 
-export default function DashboardCreateProjects() {
+export default async function DashboardCreateProjects() {
+  const user = await getUser()
   return (
     <>
       <PageHeader
@@ -11,7 +13,10 @@ export default function DashboardCreateProjects() {
         enableBackBtn
       >
         <div className='mt-8'>
-          <CreateDetails create={'projects'} />
+          <ProjectCreateDetails
+            organizationId={user.organization[0].id}
+            clerkId={user.clerkId}
+          />
         </div>
       </PageHeader>
     </>

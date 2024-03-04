@@ -1,6 +1,7 @@
 export const NAVIGATION = {
   HOME: '/dashboard',
   PROJECTS: '/dashboard/projects',
+  ORGANIZATION: '/dashboard/organization',
   BRAND_IDENTITY_CREATE: '/dashboard/projects/details/create',
   PROJECT_DETAILS: '/dashboard/projects/details',
   PROJECT_DETAILS_CREATE: '/dashboard/projects/details/create',

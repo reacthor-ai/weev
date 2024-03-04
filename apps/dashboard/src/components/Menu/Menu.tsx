@@ -28,12 +28,12 @@ export const Menu = (props: MenuProps) => {
           defaultSize={defaultLayout[0]}
           collapsible
         >
-          <div style={{ marginRight: '4.5rem' }} className={'flex content-center items-center justify-center'}>
+          <div style={{ marginRight: '3.5rem' }} className={'flex content-center items-center justify-center'}>
             <Image
               alt='weeev-logo'
               height={50}
               className='block m-auto'
-              width={400}
+              width={500}
               style={{
                 aspectRatio: '100/100',
                 objectFit: 'cover'
@@ -68,7 +68,7 @@ export const Menu = (props: MenuProps) => {
                 href: NAVIGATION.BRAND_VOICE
               },
               {
-                title: 'Chat',
+                title: 'Knowledge Hub',
                 icon: MessageCircleIcon,
                 variant: 'ghost',
                 href: NAVIGATION.CHAT

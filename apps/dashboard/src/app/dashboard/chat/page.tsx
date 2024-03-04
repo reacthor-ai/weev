@@ -4,12 +4,12 @@ export default function DashboardChat() {
   return (
     <>
       <PageHeader
-        title={'Chat'}
+        title={'Knowledge Hub'}
         subTitle={''}
         content={''}
       >
         <div className='mt-8'>
-          
+
         </div>
       </PageHeader>
     </>

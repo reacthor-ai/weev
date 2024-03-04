@@ -4,7 +4,6 @@ import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
 export default function DashboardProjectDetails(params: any) {
   const id = params?.id
-  const linkTo = `${NAVIGATION.PROJECT_DETAILS}/${id}/create`
 
   return (
     <>
@@ -13,7 +12,7 @@ export default function DashboardProjectDetails(params: any) {
         subTitle={'March Catalogue'}
         content={'Enhance user experience by incorporating user feedback and conducting usability testing.'}
         btnTitle='New Product'
-        btnLink={linkTo}
+        btnLink={`${NAVIGATION.PROJECT_DETAILS}/${id}/create`}
         enableBackBtn
       >
         <div className='mt-8'>

@@ -3,8 +3,44 @@
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useCreateProjectsAtom } from '@/store/projects/createProjects'
 
-export const ProjectCreateDetails = () => {
+type ProjectCreateDetailsProps = {
+  clerkId: string
+  organizationId: string
+}
+
+export const ProjectCreateDetails = (props: ProjectCreateDetailsProps) => {
+  const { clerkId, organizationId } = props
+
+  const [title, setTitle] = useState<string>('')
+  const [description, setDescription] = useState<string>('')
+
+  const [{ mutate: mutateProjects }] = useCreateProjectsAtom()
+  const router = useRouter()
+
+  const isDisabled = title.length === 0 || description.length === 0
+
+  const createProjects = async () => {
+    await mutateProjects(
+      {
+        clerkId,
+        organizationId,
+        project: {
+          title,
+          description
+        }
+      },
+      {
+        onSettled: () => {
+          router.back()
+        }
+      }
+    )
+  }
+
   return (
     <div className='w-[50%] p-8'>
       <div className='bg-white rounded-lg shadow-lg overflow-hidden h-full'>
@@ -13,29 +49,39 @@ export const ProjectCreateDetails = () => {
             <h1 className='text-2xl font-bold'>Product descriptions</h1>
             <div className='space-y-4'>
               <div>
-                <label className='block text-sm font-medium text-gray-700' htmlFor='product-name'>
+                <label
+                  className='block text-sm font-medium text-gray-700'
+                  htmlFor='product-name'
+                >
                   Project Name *
                 </label>
                 <Input
-                  id='product-name'
+                  onChange={e => setTitle(e.target.value)}
                   placeholder='Please enter the title of your project'
                 />
               </div>
               <div>
-                <label className='block text-sm font-medium text-gray-700' htmlFor='product-attributes'>
+                <label
+                  className='block text-sm font-medium text-gray-700'
+                  htmlFor='product-attributes'
+                >
                   Project Description *
                 </label>
                 <Textarea
+                  onChange={e => setDescription(e.target.value)}
                   placeholder='What is your project about?'
-                  id='product-attributes'
                 />
               </div>
             </div>
-            <Button className='bg-blue-600 text-white w-full'>Create projects</Button>
+            <Button
+              disabled={isDisabled}
+              onClick={() => createProjects()}
+              className='bg-blue-600 text-white w-full'
+            >
+              Create projects
+            </Button>
           </div>
-
         </div>
-
       </div>
     </div>
   )
