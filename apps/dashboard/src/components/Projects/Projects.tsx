@@ -10,11 +10,11 @@ type ProjectCardProps = {
 export const ProjectCard = (props: ProjectCardProps) => {
   const { projects } = props
   return (
-    <div className='grid grid-cols-3 gap-6'>
+    <div className='grid grid-cols-3 gap-8'>
       {projects.map(project => {
         return (
           <Link href={`${NAVIGATION.PROJECT_DETAILS}/${project?.id}`}>
-            <Card className='w-[360px] bg-white p-3 rounded-lg'>
+            <Card className='w-[100%] bg-white p-3 rounded-lg'>
               <CardHeader>
                 <CardTitle className='text-lg font-semibold'>
                   {project?.title}

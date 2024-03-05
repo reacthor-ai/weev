@@ -42,7 +42,6 @@ export const createProjectsAtom = atomWithMutation(() => ({
         result: null
       }
     } catch (error) {
-      console.log({ error_Ss: error })
       return {
         status: 'rejected',
         result: null,

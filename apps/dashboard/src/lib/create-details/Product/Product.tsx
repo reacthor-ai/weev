@@ -17,7 +17,7 @@ export const ProductCreateDetails = () => {
   return (
     <div className='min-h-screen p-8'>
       <div className='bg-white rounded-lg shadow-lg overflow-hidden'>
-        <div className='grid grid-cols-2'>
+        <div className='grid grid-cols-2  mb-8'>
           <div className='border-r border-gray-200 p-8 space-y-6'>
             <h1 className='text-2xl font-bold'>New Product</h1>
             <div className='space-y-4'>

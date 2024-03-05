@@ -2,6 +2,7 @@ import { ProjectCard } from '@/components/Projects/Projects'
 import { getOrganizationProjects } from '@/database/projects'
 import { PageHeader } from '@/components/PageHeader'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
+import { Suspense } from 'react'
 
 export default async function DashboardProjects() {
   const projects = await getOrganizationProjects()
@@ -14,11 +15,13 @@ export default async function DashboardProjects() {
       btnTitle='Create Projects'
       btnLink={NAVIGATION.PROJECT_DETAILS_CREATE}
     >
-      {!projects || projects.length === 0 ? (
-        <>Not found!</>
-      ) : (
-        <ProjectCard projects={projects} />
-      )}
+      <Suspense fallback={'Loading...'}>
+        {!projects || projects.length === 0 ? (
+          <>Not found!</>
+        ) : (
+          <ProjectCard projects={projects} />
+        )}
+      </Suspense>
     </PageHeader>
   )
 }

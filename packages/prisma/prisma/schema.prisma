@@ -12,6 +12,7 @@ generator client {
 enum PromptType {
   PRODUCT_IMAGE
   PRODUCT_TEXT
+  BRAND_TEXT
 }
 
 enum Status {
@@ -29,20 +30,24 @@ model User {
 }
 
 model Organization {
-  id      String    @id @default(cuid())
-  title   String
-  project Project[]
-  user    User?     @relation(fields: [userId], references: [id])
-  userId  String?
+  id         String       @id @default(cuid())
+  title      String
+  project    Project[]
+  brandVoice BrandVoice[]
+  user       User?        @relation(fields: [userId], references: [id])
+  userId     String?
 }
 
 model BrandVoice {
-  id          String    @id @default(cuid())
-  type        String
-  title       String
-  description String
-  prompt      Prompt[]
-  product     Product[]
+  id             String        @id @default(cuid())
+  type           String
+  title          String
+  description    String
+  link           String
+  prompt         Prompt[]
+  product        Product[]
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 }
 
 model Prompt {
@@ -53,6 +58,8 @@ model Prompt {
   brandVoiceId String?
   product      Product?    @relation(fields: [productId], references: [id])
   productId    String?
+  image        Image?      @relation(fields: [imageId], references: [id])
+  imageId      String?
 }
 
 model Project {
@@ -80,6 +87,7 @@ model Product {
 model Image {
   id          String   @id @default(cuid())
   src         String
+  prompt      Prompt[]
   description String?
   product     Product? @relation(fields: [productId], references: [id])
   productId   String?

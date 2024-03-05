@@ -1,23 +1,36 @@
 import { PageHeader } from '@/components/PageHeader'
 import { Products } from '@/components/Products'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
+import { getUniqueProjects } from '@/database/projects'
+import { Suspense } from 'react'
 
-export default function DashboardProjectDetails(params: any) {
-  const id = params?.id
+export default async function DashboardProjectDetails(props: any) {
+  const { id } = props.params
+  const project = await getUniqueProjects({
+    id
+  })
 
   return (
     <>
       <PageHeader
         title={'View Projects'}
-        subTitle={'March Catalogue'}
-        content={'Enhance user experience by incorporating user feedback and conducting usability testing.'}
+        subTitle={project?.details.title ?? ''}
+        content={
+          project?.details.description ?? ''
+        }
         btnTitle='New Product'
-        btnLink={`${NAVIGATION.PROJECT_DETAILS}/${id}/create`}
+        btnLink={`${NAVIGATION.PROJECT_DETAILS}/${id}/create-product`}
         enableBackBtn
       >
-        <div className='mt-8'>
-          <Products productId={id} />
-        </div>
+        <Suspense fallback='Loading...'>
+          <div className='mt-8 scroll-auto h-[100rem]'>
+            {!project?.products || project?.products.length === 0 ? (
+              <>No products available!</>
+            ) : (
+              <Products productId={id} />
+            )}
+          </div>
+        </Suspense>
       </PageHeader>
     </>
   )

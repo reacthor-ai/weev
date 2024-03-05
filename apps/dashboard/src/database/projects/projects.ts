@@ -5,19 +5,44 @@ import { getUser } from '@/database/user'
 export const getOrganizationProjects = cache(async () => {
   const user = await getUser()
 
-  const organization = await prisma.organization.findUnique({
+  const projects = await prisma.project.findMany({
     where: {
-      id: user.organization[0].id,
-      user: {
-        clerkId: user.clerkId
-      }
-    },
-    include: {
-      project: true
+      organizationId: user.organization[0].id
     }
   })
 
-  if (!organization) return null
+  if (!projects) return null
 
-  return organization.project
+  return projects
+})
+
+type GetUniqueProjectsParams = {
+  id: string
+}
+
+export const getUniqueProjects = cache(async (params: GetUniqueProjectsParams) => {
+  const { id } = params
+  const user = await getUser()
+
+  const projects = await prisma.project.findUnique({
+    where: {
+      id: id,
+      organization: {
+        id: user.organization[0].id
+      }
+    },
+    include: {
+      product: true
+    }
+  })
+
+  if (!projects) return null
+
+  return {
+    products: projects.product,
+    details: {
+      title: projects.title,
+      description: projects.description
+    }
+  }
 })

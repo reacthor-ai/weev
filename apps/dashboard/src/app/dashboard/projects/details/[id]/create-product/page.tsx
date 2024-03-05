@@ -1,7 +1,8 @@
 import { PageHeader } from '@/components/PageHeader'
 import { CreateDetails } from '@/lib/create-details'
+import { NextPageContext } from 'next'
 
-export default function DashboardCreateProducts() {
+export default function DashboardCreateProducts(params: NextPageContext) {
   return (
     <>
       <PageHeader
@@ -10,7 +11,7 @@ export default function DashboardCreateProducts() {
         content={''}
         enableBackBtn
       >
-        <div className='mt-8'>
+        <div className={''}>
           <CreateDetails create={'product'} />
         </div>
       </PageHeader>

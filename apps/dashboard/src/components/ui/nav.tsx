@@ -30,9 +30,9 @@ export function Nav(props: NavProps) {
       className='group flex flex-col gap-4 py-2 data-[collapsed=true]:py-2'
     >
       <div className='grid gap-1 px-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2'>
-        {links.map((link, index) =>
+        {links.map((link) =>
           isCollapsed ? (
-            <Tooltip key={index} delayDuration={0}>
+            <Tooltip key={link.href} delayDuration={0}>
               <TooltipTrigger asChild>
                 <Link
                   href={link.href}
@@ -55,6 +55,7 @@ export function Nav(props: NavProps) {
           ) : (
             <Link
               href={link.href}
+              key={link.href}
               className={cn(
                 buttonVariants({
                   variant: link.href === pathname ? 'default' : 'ghost',

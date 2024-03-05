@@ -1,20 +1,18 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import type { BrandVoiceType } from '@/database'
 
-const brands = [
-  {
-    id: '821e4bb1-dabf-4595-82d5-dcee4e16772',
-    title: 'General Brand Guidelines',
-    shortDescription: 'Enhance user experience by incorporating user feedback and conducting usability testing.',
-    type: 'Company Information'
-  }
-]
+type BrandIdentityProps = {
+  brandVoices: BrandVoiceType[]
+}
 
-export const BrandIdentity = () => {
+export const BrandIdentity = (props: BrandIdentityProps) => {
+  const { brandVoices } = props
+
   return (
     <>
       {
-        brands.map(brand => {
+        brandVoices.map(brand => {
           return (
             <Card key={brand.id} className='w-[350px] bg-white rounded-lg shadow-md p-1'>
               <CardHeader className='mb-2'>
@@ -27,7 +25,7 @@ export const BrandIdentity = () => {
               </CardHeader>
               <CardContent>
                 <h3 className='text-lg font-semibold leading-tight text-gray-900'>{brand.title}</h3>
-                <p className='text-sm text-gray-500'>{brand.shortDescription}</p>
+                <p className='text-sm text-gray-500'>{brand.description}</p>
               </CardContent>
             </Card>
           )

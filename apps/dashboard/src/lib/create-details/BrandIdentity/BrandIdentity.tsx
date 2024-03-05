@@ -33,7 +33,7 @@ export const BrandIdentityCreateDetails = () => {
           </div>
           <div className='p-8 space-y-4'>
             <div className='flex flex-col justify-between'>
-              <h2 className='text-xl font-semibold'>Upload your brand guidelines</h2>
+              <h2 className='text-xl font-semibold'>Brand guidelines</h2>
               <div>
                 <UploadFiles />
               </div>

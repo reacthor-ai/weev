@@ -1,0 +1,1 @@
+export { getBrandVoicesByOrgId } from './brand'

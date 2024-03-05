@@ -4,6 +4,7 @@ export const NAVIGATION = {
   ORGANIZATION: '/dashboard/organization',
   BRAND_IDENTITY_CREATE: '/dashboard/projects/details/create',
   PROJECT_DETAILS: '/dashboard/projects/details',
+  PROJECT_DETAILS_PRODUCT: '/dashboard/projects/details/create-product',
   PROJECT_DETAILS_CREATE: '/dashboard/projects/details/create',
   PROJECT_DETAILS_CREATE_IMAGE: '/dashboard/projects/details/edit/create-image',
   SETTINGS: '/dashboard/settings',
