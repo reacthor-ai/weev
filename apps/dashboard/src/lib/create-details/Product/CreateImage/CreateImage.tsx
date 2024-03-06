@@ -1,11 +1,35 @@
 'use client'
 
 import { Textarea } from '@/components/ui/textarea'
-import { UploadImage } from '../Upload'
+import { UploadFiles } from '../../Upload'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { useUploadFileAtom } from '@/store/upload-file'
 
 export const CreateImageDetails = () => {
+  const [files, setFiles] = useState<File[]>([])
+
+  const [{ mutate: uploadFileMutation }] = useUploadFileAtom()
+  const uploadFile = async () => {
+    const formData = new FormData()
+    console.log({ files })
+    formData.append('file', files[0])
+
+    await uploadFileMutation({
+      uploadFile: JSON.stringify(formData),
+      fileId: 'file-id',
+      name: 'product-image',
+      organizationId: 'org-id',
+      userId: 'user-id',
+      fileType: 'multipart/form-data'
+    }, {
+      onSettled: async (res) => {
+        console.log({ res })
+      }
+    })
+  }
+
   return (
     <div className='min-h-screen p-8'>
       <div className='bg-white rounded-lg shadow-lg overflow-hidden'>
@@ -15,7 +39,12 @@ export const CreateImageDetails = () => {
             <div className='flex flex-col justify-between'>
               <h2 className='text-xl font-semibold'>Add Image</h2>
               <div>
-                <UploadImage />
+                <UploadFiles
+                  title='Upload product image or similar'
+                  files={files}
+                  setFiles={setFiles}
+                  filesAllowed={['png', 'jpg', 'jpeg']}
+                />
               </div>
               <div>
                 <label className='block mb-4 text-sm font-medium text-gray-700' htmlFor='product-attributes'>
@@ -27,7 +56,7 @@ export const CreateImageDetails = () => {
                 />
               </div>
             </div>
-            <Button className='bg-blue-600 text-white w-full'>Generate content</Button>
+            <Button onClick={uploadFile} className='bg-blue-600 text-white w-full'>Generate content</Button>
           </div>
           <div className='p-8 space-y-4'>
             <div className='flex flex-col justify-between'>

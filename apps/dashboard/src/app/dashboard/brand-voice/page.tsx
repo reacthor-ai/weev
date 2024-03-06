@@ -17,15 +17,16 @@ export default async function DashboardBrandVoice() {
         btnLink={NAVIGATION.BRAND_VOICE_CREATE}
       >
 
-        <div className='mt-8'>
-          <Suspense fallback={'Loading...'}>
+
+        <Suspense fallback={'Loading...'}>
+          <div className='mt-8'>
             {!brandVoices || brandVoices.length === 0 ? (
               <>Please add your brand voices!</>
             ) : (
               <BrandIdentity brandVoices={brandVoices} />
             )}
-          </Suspense>
-        </div>
+          </div>
+        </Suspense>
       </PageHeader>
     </>
   )

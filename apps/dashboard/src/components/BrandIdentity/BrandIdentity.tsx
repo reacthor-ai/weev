@@ -10,7 +10,7 @@ export const BrandIdentity = (props: BrandIdentityProps) => {
   const { brandVoices } = props
 
   return (
-    <>
+    <div className='grid grid-cols-3 gap-8'>
       {
         brandVoices.map(brand => {
           return (
@@ -31,7 +31,7 @@ export const BrandIdentity = (props: BrandIdentityProps) => {
           )
         })
       }
-    </>
+    </div>
   )
 }
 

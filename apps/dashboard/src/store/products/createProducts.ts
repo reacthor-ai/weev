@@ -17,7 +17,7 @@ export const createProductsAtom = atomWithMutation(() => ({
   mutationKey: ['createProduct'],
   mutationFn: async (params: CreateProductsActionAtomParams) => {
     try {
-      const response = await fetch('/dashboard/projects/details/api', {
+      const response = await fetch('/dashboard/api/create-products', {
         method: 'POST',
         body: JSON.stringify(params)
       })

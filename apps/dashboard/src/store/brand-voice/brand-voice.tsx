@@ -16,7 +16,6 @@ type CreateBrandVoiceActionAtomParams = {
       voice: string;
       emotions: string;
       photoGuidelines: string;
-      brandGuidelines: string;
     };
   };
   link: string
@@ -26,7 +25,7 @@ export const createBrandVoiceAtom = atomWithMutation(() => ({
   mutationKey: ['createBrandVoice'],
   mutationFn: async (params: CreateBrandVoiceActionAtomParams) => {
     try {
-      const response = await fetch('/dashboard/create/api', {
+      const response = await fetch('/dashboard/api/create-brand-voice', {
         method: 'POST',
         body: JSON.stringify(params)
       })

@@ -31,7 +31,7 @@ model User {
 
 model Organization {
   id         String       @id @default(cuid())
-  title      String
+  title      String       @db.VarChar(200)
   project    Project[]
   brandVoice BrandVoice[]
   user       User?        @relation(fields: [userId], references: [id])
@@ -41,8 +41,8 @@ model Organization {
 model BrandVoice {
   id             String        @id @default(cuid())
   type           String
-  title          String
-  description    String
+  title          String        @db.VarChar(300)
+  description    String        @db.VarChar(600)
   link           String
   prompt         Prompt[]
   product        Product[]
@@ -53,7 +53,7 @@ model BrandVoice {
 model Prompt {
   id           String      @id @default(cuid())
   type         PromptType
-  text         String
+  text         String      @db.VarChar(600)
   brandVoice   BrandVoice? @relation(fields: [brandVoiceId], references: [id])
   brandVoiceId String?
   product      Product?    @relation(fields: [productId], references: [id])

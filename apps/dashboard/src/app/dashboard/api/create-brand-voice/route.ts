@@ -17,8 +17,7 @@ export async function POST(req: Request) {
         audience,
         voice,
         emotions,
-        photoGuidelines,
-        brandGuidelines
+        photoGuidelines
       }
     },
     link
@@ -40,28 +39,26 @@ export async function POST(req: Request) {
             type,
             link,
             prompt: {
-              create: [
-                {
-                  text: audience,
-                  type: 'BRAND_TEXT'
-                },
-                {
-                  text: voice,
-                  type: 'BRAND_TEXT'
-                },
-                {
-                  text: emotions,
-                  type: 'BRAND_TEXT'
-                },
-                {
-                  text: photoGuidelines,
-                  type: 'BRAND_TEXT'
-                },
-                {
-                  text: brandGuidelines,
-                  type: 'BRAND_TEXT'
-                }
-              ]
+              createMany: {
+                data: [
+                  {
+                    text: audience,
+                    type: 'BRAND_TEXT'
+                  },
+                  {
+                    text: voice,
+                    type: 'BRAND_TEXT'
+                  },
+                  {
+                    text: emotions,
+                    type: 'BRAND_TEXT'
+                  },
+                  {
+                    text: photoGuidelines,
+                    type: 'BRAND_TEXT'
+                  }
+                ]
+              }
             }
           }
         ]
