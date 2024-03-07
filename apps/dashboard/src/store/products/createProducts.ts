@@ -3,8 +3,6 @@ import { useAtom } from 'jotai'
 import { ERROR_MESSAGES } from '@/store/types'
 
 type CreateProductsActionAtomParams = {
-  title: string
-  description: string
   prompt: {
     text: string
     image: string

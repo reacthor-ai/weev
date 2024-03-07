@@ -11,13 +11,12 @@ export const CreateImageDetails = () => {
   const [files, setFiles] = useState<File[]>([])
 
   const [{ mutate: uploadFileMutation }] = useUploadFileAtom()
+
   const uploadFile = async () => {
     const formData = new FormData()
-    console.log({ files })
-    formData.append('file', files[0])
 
     await uploadFileMutation({
-      uploadFile: JSON.stringify(formData),
+      uploadFile: formData as any,
       fileId: 'file-id',
       name: 'product-image',
       organizationId: 'org-id',

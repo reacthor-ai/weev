@@ -13,59 +13,23 @@ export async function POST(req: Request) {
   })
 
   const bucket = storage.bucket(process.env.BUCKET_NAME as string)
-  const fileName = `${name}-${organizationId}-${fileId}`
+  const fileName = `${name}-${fileId}`
 
-  if (fileType === 'text/plain') {
-    try {
-      await bucket.file(`${fileName}.txt`).save(uploadFile, {
-        contentType: fileType,
-        metadata: {
-          organizationId,
-          userId,
-          fileId
-        }
-      })
+  try {
+    await bucket.file(`${organizationId}/${fileName}.txt`).save(uploadFile, {
+      contentType: fileType,
+      metadata: {
+        organizationId,
+        userId,
+        fileId
+      }
+    })
 
-      success = true
-      gcpFileId = fileName
-    } catch (err) {
-      error = err
-      success = false
-    }
-    return Response.json({ error, success, gcpFileId })
+    success = true
+    gcpFileId = fileName
+  } catch (err) {
+    error = err
+    success = false
   }
-
-  // most likely an image
-  else {
-    try {
-      // Assuming `file` is the binary data of the image, and `fileName` is how you want to name the file in GCP.
-      const blob = bucket.file(`${fileName}.png`)
-      const stream = blob.createWriteStream({
-        metadata: {
-          contentType: fileType, // Ensure you have the correct MIME type
-          metadata: {
-            organizationId,
-            userId,
-            fileId
-          }
-        }
-      })
-
-      stream.on('error', (err) => {
-        console.error('Stream error:', err)
-      })
-
-      stream.on('finish', async () => {
-        // File uploaded successfully
-        success = true
-        gcpFileId = fileName
-      })
-
-      stream.end(uploadFile)
-    } catch (err) {
-      error = err
-      success = false
-    }
-    return Response.json({ error, success, gcpFileId })
-  }
+  return Response.json({ error, success, gcpFileId })
 }

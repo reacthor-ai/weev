@@ -1,8 +1,20 @@
 import { PageHeader } from '@/components/PageHeader'
-import { CreateDetails } from '@/lib/create-details'
-import { NextPageContext } from 'next'
+import { ProductCreateDetails } from '@/lib/create-details/Product'
+import { getUser } from '@/database/user'
+import { Suspense } from 'react'
+import { getBrandVoicesByOrgId } from '@/database/brand'
+import { redirect } from 'next/navigation'
+import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
-export default function DashboardCreateProducts(params: NextPageContext) {
+export default async function DashboardCreateProducts() {
+  const user = await getUser()
+
+  const brandVoices = await getBrandVoicesByOrgId()
+
+  if (!brandVoices) {
+    redirect(NAVIGATION.BRAND_VOICE_CREATE)
+  }
+
   return (
     <>
       <PageHeader
@@ -11,9 +23,15 @@ export default function DashboardCreateProducts(params: NextPageContext) {
         content={''}
         enableBackBtn
       >
-        <div className={''}>
-          <CreateDetails create={'product'} />
-        </div>
+        <Suspense fallback={'Loading...'}>
+          <div className={''}>
+            <ProductCreateDetails
+              organizationId={user.organization[0].id}
+              userId={user.id}
+              brandVoices={brandVoices}
+            />
+          </div>
+        </Suspense>
       </PageHeader>
     </>
   )

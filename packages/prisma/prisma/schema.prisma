@@ -15,6 +15,11 @@ enum PromptType {
   BRAND_TEXT
 }
 
+enum ImageType {
+  PROMPT_IMAGE
+  GENERAL_IMAGE
+}
+
 enum Status {
   IN_PROGRESS
   DONE
@@ -73,8 +78,8 @@ model Project {
 
 model Product {
   id           String     @id @default(cuid())
-  title        String
-  description  String
+  title        String?
+  description  String?
   prompt       Prompt[]
   image        Image[]
   status       Status
@@ -85,11 +90,13 @@ model Product {
 }
 
 model Image {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   src         String
+  default     Boolean
+  type        ImageType
   prompt      Prompt[]
   description String?
-  product     Product? @relation(fields: [productId], references: [id])
+  product     Product?  @relation(fields: [productId], references: [id])
   productId   String?
 }
 

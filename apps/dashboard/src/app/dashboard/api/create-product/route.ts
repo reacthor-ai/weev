@@ -3,8 +3,6 @@ import { prisma } from '@/database'
 export async function POST(req: Request) {
   const params = await req.json()
   const {
-    title,
-    description,
     prompt: {
       text,
       image
@@ -15,17 +13,17 @@ export async function POST(req: Request) {
 
   const data = await prisma.product.create({
     data: {
-      title,
-      description,
       brandVoiceId,
       image: {
         create: [
           {
             src,
+            default: false,
+            type: 'PROMPT_IMAGE',
             prompt: {
               create: [
                 {
-                  text: image,
+                  text: image, // image prompt
                   type: 'PRODUCT_IMAGE'
                 }
               ]
@@ -38,7 +36,7 @@ export async function POST(req: Request) {
         createMany: {
           data: [
             {
-              text,
+              text, // text prompt
               type: 'PRODUCT_TEXT'
             }
           ]

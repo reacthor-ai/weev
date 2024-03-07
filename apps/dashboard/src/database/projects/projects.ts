@@ -32,7 +32,11 @@ export const getUniqueProjects = cache(async (params: GetUniqueProjectsParams) =
       }
     },
     include: {
-      product: true
+      product: {
+        include: {
+          image: true
+        }
+      }
     }
   })
 

@@ -27,7 +27,7 @@ export default async function DashboardProjectDetails(props: any) {
             {!project?.products || project?.products.length === 0 ? (
               <>No products available!</>
             ) : (
-              <Products productId={id} />
+              <Products products={project.products} productId={id} />
             )}
           </div>
         </Suspense>

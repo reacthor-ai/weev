@@ -7,52 +7,21 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
-
-const products = [
-  {
-    id: '821e4bb1-dabf-4595-82d5-dcee4e1677a5',
-    image:
-      'https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/4cfe9579-6a35-4aa4-888b-8e45bc551392/Default_Photorealisticthe_Electrolux_UltraQuiet_EcoWash_contro_0.jpg',
-    title: 'ElectroLux Washing Machine ECO',
-    description:
-      'Photorealistic,a washing machine. Subtly incorporate the washing machine in a realistic beautiful kitchen in the background, out of focus, suggesting eco-conscious choices.'
-  },
-  {
-    id: '821e4bb1-dabf-42595-82d5-dcee4e1677a4',
-    image:
-      'https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/4cfe9579-6a35-4aa4-888b-8e45bc551392/Default_Photorealisticthe_Electrolux_UltraQuiet_EcoWash_contro_0.jpg',
-    title: 'ElectroLux Washing Machine ECO',
-    description:
-      'Photorealistic,a washing machine. Subtly incorporate the washing machine in a realistic beautiful kitchen in the background, out of focus, suggesting eco-conscious choices.'
-  },
-  {
-    id: '821e4bb1-dabf-4595-82d5-dce24e1677a5',
-    image:
-      'https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/4cfe9579-6a35-4aa4-888b-8e45bc551392/Default_Photorealisticthe_Electrolux_UltraQuiet_EcoWash_contro_0.jpg',
-    title: 'ElectroLux Washing Machine ECO',
-    description:
-      'Photorealistic,a washing machine. Subtly incorporate the washing machine in a realistic beautiful kitchen in the background, out of focus, suggesting eco-conscious choices.'
-  },
-  {
-    id: '821e4bb1-dabf-4595-82d5-dcee23e1677a5',
-    image:
-      'https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/4cfe9579-6a35-4aa4-888b-8e45bc551392/Default_Photorealisticthe_Electrolux_UltraQuiet_EcoWash_contro_0.jpg',
-    title: 'ElectroLux Washing Machine ECO',
-    description:
-      'Photorealistic,a washing machine. Subtly incorporate the washing machine in a realistic beautiful kitchen in the background, out of focus, suggesting eco-conscious choices.'
-  }
-]
+import { ProductType } from '@/database'
 
 type ProductsProps = {
   productId: string
+  products: ProductType[]
 }
 
 export const Products = (props: ProductsProps) => {
-  const { productId } = props
+  const { productId, products } = props
   return (
     <div className='grid grid-cols-3 gap-6'>
       {products.map(product => {
         const linkToEdit = `${NAVIGATION.PROJECT_DETAILS}/edit/${productId}`
+        const isPending = product.status
+
         return (
           <Card className='w-[300px]'>
             <div className='grid gap-2.5 p-4'>
@@ -65,19 +34,19 @@ export const Products = (props: ProductsProps) => {
                 </Badge>
               </div>
               <Image
-                alt='Product Image'
+                alt={product.title ?? ''}
                 className='aspect-square object-cover rounded-lg border border-gray-200 w-full overflow-hidden dark:border-gray-800'
                 height={300}
-                src={product.image}
+                src={''}
                 width={300}
               />
               <div className='flex items-center gap-4'>
                 <div className='grid gap-0.5'>
                   <h2 className='text-xl font-bold leading-none'>
-                    {product.title}
+                    {product?.title ?? ''}
                   </h2>
                   <p className='text-sm my-2 leading-none'>
-                    {truncateWords(100, product.description)}
+                    {truncateWords(100, product?.description ?? '')}
                   </p>
                 </div>
               </div>
