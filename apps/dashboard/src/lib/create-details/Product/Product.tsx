@@ -4,31 +4,39 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { UploadFiles } from '../Upload'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { uuid } from 'uuidv4'
-import { useCreateProductAtom } from '@/store/products/createProducts'
 import { BrandVoiceType } from '@/database'
+import { PRODUCT_IMAGE_PREFIX } from '@/shared-utils/constant/constant-default'
+import { useGeneratePersonalizeAIVoiceAtom } from '@/store/ai/store-brand-voice'
+import { useGenerateAiProductAtom } from '@/store/ai/generate-ai-product'
+import { useRouter } from 'next/navigation'
+import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
 type ProductCreateDetailsProps = {
   organizationId: string
+  projectId: string
   userId: string
+  clerkId: string
   brandVoices: BrandVoiceType[]
 }
 
 export const ProductCreateDetails = (props: ProductCreateDetailsProps) => {
-  const { organizationId, userId, brandVoices } = props
-
+  const router = useRouter()
+  const { organizationId, userId, brandVoices, clerkId, projectId } = props
+  const [brandVoice, setBrandVoice] = useState<string>('')
   const [files, setFiles] = useState<File[]>([])
   const [brandVoiceId, setBrandVoiceId] = useState<string>('')
   const [imageryGuidelines, setImageryGuidelines] = useState('')
   const [copyWriteBrief, setCopyWriteBrief] = useState('')
 
-  const [{ mutate: createProduct }] = useCreateProductAtom()
+  const [{ mutate: generatePersonalizedAIVoice }] = useGeneratePersonalizeAIVoiceAtom()
+  const [{ mutate: generateAIProduct }] = useGenerateAiProductAtom()
 
   const uploadFile = async () => {
     const params = {
       fileId: uuid(),
-      name: 'product-image',
+      name: PRODUCT_IMAGE_PREFIX,
       organizationId,
       userId
     }
@@ -46,9 +54,9 @@ export const ProductCreateDetails = (props: ProductCreateDetailsProps) => {
         method: 'POST',
         body: formData
       })
-
+      const value = await res.json()
       if (res.ok) {
-        return { gcpFileId: `${params.name}-${params.fileId}` }
+        return { gcpFileId: `${params.name}-${params.fileId}`, url: value.url }
       }
     } catch (error) {
       console.log({ error })
@@ -58,23 +66,52 @@ export const ProductCreateDetails = (props: ProductCreateDetailsProps) => {
   }
 
   const newProduct = async () => {
-    uploadFile().then(
-      async (res) => {
-        createProduct({
-          prompt: {
-            text: copyWriteBrief,
-            image: imageryGuidelines
-          },
+    uploadFile().then(async res => {
+      if (res && res.url.length > 0) {
+        generateAIProduct({
+          brand_voice: brandVoice,
+          clerkId,
+          projectId,
           brandVoiceId,
-          src: res.gcpFileId
+          model_id: 'PhotoReal',
+          marketing_requirements: copyWriteBrief,
+          image: {
+            prompt: imageryGuidelines,
+            url: res?.url
+          }
+        }, {
+          onSettled: (res) => {
+            if (res && res.status === 'fulfilled') {
+              router.push(NAVIGATION.PROJECTS)
+            }
+          }
         })
       }
-    )
+    })
   }
 
   const isDisabled = () => {
     return imageryGuidelines.length <= 0 || copyWriteBrief.length <= 0
   }
+
+  useEffect(() => {
+    const updatePersonalizedVoice = async () => {
+      await generatePersonalizedAIVoice({
+        brandVoiceId,
+        max_token: 1000,
+        clerkId
+      }, {
+        onSettled: (res) => {
+          console.log({ res })
+          if (res && res.result) {
+            setBrandVoice((res.result.message as string).trim())
+          }
+        }
+      })
+    }
+
+    updatePersonalizedVoice()
+  }, [brandVoiceId])
 
   return (
     <div className='min-h-screen p-8'>
@@ -122,8 +159,12 @@ export const ProductCreateDetails = (props: ProductCreateDetailsProps) => {
                 />
               </div>
             </div>
-            <Button disabled={isDisabled()} onClick={newProduct} className='bg-blue-600 text-white w-full'>Generate
-              content</Button>
+            <Button
+              disabled={isDisabled() || brandVoiceId.length <= 0}
+              onClick={newProduct}
+              className='bg-blue-600 text-white w-full'>
+              Generate content
+            </Button>
           </div>
           <div className='p-8 space-y-4'>
             <div className='flex flex-col justify-between'>

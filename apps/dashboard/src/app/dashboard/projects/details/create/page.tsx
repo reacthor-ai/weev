@@ -19,6 +19,7 @@ export default async function DashboardCreateProjects() {
           />
         </div>
       </PageHeader>
+      <div className='mt-[8rem]' />
     </>
   )
 }

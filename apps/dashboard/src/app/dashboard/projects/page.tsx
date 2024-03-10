@@ -6,7 +6,6 @@ import { Suspense } from 'react'
 
 export default async function DashboardProjects() {
   const projects = await getOrganizationProjects()
-
   return (
     <PageHeader
       title={'Projects'}
@@ -22,6 +21,7 @@ export default async function DashboardProjects() {
           <ProjectCard projects={projects} />
         )}
       </Suspense>
+      <div className='mt-[8rem]' />
     </PageHeader>
   )
 }

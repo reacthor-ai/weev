@@ -8,17 +8,23 @@ export async function POST(req: Request) {
       image
     },
     brandVoiceId,
-    src
+    projectId,
+    src,
+    title,
+    description
   } = params
 
   const data = await prisma.product.create({
     data: {
+      title,
+      description,
+      projectId,
       brandVoiceId,
       image: {
         create: [
           {
             src,
-            default: false,
+            default: true,
             type: 'PROMPT_IMAGE',
             prompt: {
               create: [

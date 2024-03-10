@@ -1,6 +1,7 @@
 import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import type { BrandVoiceType } from '@/database'
+import { truncateWords } from '@/shared-utils/text'
 
 type BrandIdentityProps = {
   brandVoices: BrandVoiceType[]
@@ -25,7 +26,9 @@ export const BrandIdentity = (props: BrandIdentityProps) => {
               </CardHeader>
               <CardContent>
                 <h3 className='text-lg font-semibold leading-tight text-gray-900'>{brand.title}</h3>
-                <p className='text-sm text-gray-500'>{brand.description}</p>
+                <p className='text-sm text-gray-500'>
+                  {truncateWords(20, brand?.description ?? '')}
+                </p>
               </CardContent>
             </Card>
           )

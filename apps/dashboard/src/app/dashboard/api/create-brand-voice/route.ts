@@ -6,6 +6,7 @@ export async function POST(req: Request) {
   const {
     organizationId,
     clerkId,
+    link,
     brandVoice: {
       title,
       description,
@@ -19,8 +20,7 @@ export async function POST(req: Request) {
         emotions,
         photoGuidelines
       }
-    },
-    link
+    }
   } = params
 
   const data = await prisma.organization.update({

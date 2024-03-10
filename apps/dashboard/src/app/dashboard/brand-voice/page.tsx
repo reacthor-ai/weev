@@ -18,15 +18,16 @@ export default async function DashboardBrandVoice() {
       >
 
 
-        <Suspense fallback={'Loading...'}>
-          <div className='mt-8'>
-            {!brandVoices || brandVoices.length === 0 ? (
-              <>Please add your brand voices!</>
-            ) : (
+        <div className='min-h-screen my-8'>
+          {!brandVoices || brandVoices.length === 0 ? (
+            <>Please add your brand voices!</>
+          ) : (
+            <Suspense fallback={'Loading...'}>
               <BrandIdentity brandVoices={brandVoices} />
-            )}
-          </div>
-        </Suspense>
+            </Suspense>
+          )}
+        </div>
+        <div className='mt-[8rem]' />
       </PageHeader>
     </>
   )

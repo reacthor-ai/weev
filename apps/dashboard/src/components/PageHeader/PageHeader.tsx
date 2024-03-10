@@ -1,12 +1,8 @@
-'use client'
-
 import { Separator } from '@/components/ui/separator'
 import { ReactNode } from 'react'
 import { Button } from '@/components/ui/button'
 import { PlusCircledIcon } from '@radix-ui/react-icons'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { ArrowLeftIcon } from 'lucide-react'
 
 type PageHeaderProps = {
   title: string
@@ -28,21 +24,10 @@ export const PageHeader = (props: PageHeaderProps) => {
     btnLink,
     enableBackBtn
   } = props
-  const router = useRouter()
   return (
     <div className='h-screen'>
       <div className='flex items-center justify-between px-6 py-4'>
         <div className='flex flex-row items-center'>
-          {enableBackBtn && (
-            <div>
-              <Button
-                className='bg-white text-black hover:text-white hover:bg-black w-[50px]'
-                onClick={() => router.back()}
-              >
-                <ArrowLeftIcon />
-              </Button>
-            </div>
-          )}
           <div className='ml-4'>
             <h1 className='text-2xl'>{title}</h1>
           </div>

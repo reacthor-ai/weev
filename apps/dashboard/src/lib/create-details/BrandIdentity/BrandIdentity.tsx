@@ -10,6 +10,8 @@ import { pdfToText } from 'pdf-ts'
 import { useUploadFileAtom } from '@/store/upload-file'
 import { uuid } from 'uuidv4'
 import { useRouter } from 'next/navigation'
+import { BRAND_VOICE_PREFIX } from '@/shared-utils/constant/constant-default'
+import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
 const FILES_ALLOWED = ['.pdf', '.txt']
 
@@ -96,17 +98,17 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
             uploadFile: pdf,
             organizationId,
             userId,
-            name: 'brand-voice',
+            name: BRAND_VOICE_PREFIX,
             fileType: 'text/plain',
             fileId
           }, {
             onSettled: async (res) => {
               if (res && res.status === 'fulfilled') {
                 await createBrandVoice(res.result.gcpFileId).then(() => {
+                  router.push(NAVIGATION.BRAND_VOICE)
                   setLoading(false)
-                  router.refresh()
                 })
-              }
+              } else router.refresh()
             }
           })
         }
@@ -119,15 +121,15 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
           uploadFile: text,
           organizationId,
           userId,
-          name: 'brand-voice',
+          name: BRAND_VOICE_PREFIX,
           fileType: 'text/plain',
           fileId
         }, {
           onSettled: async (res) => {
             if (res && res.status === 'fulfilled') {
               await createBrandVoice(res.result.gcpFileId).then(() => {
+                router.push(NAVIGATION.BRAND_VOICE)
                 setLoading(false)
-                router.refresh()
               })
             }
           }
@@ -175,7 +177,7 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
                 />
               </div>
               <Button
-                disabled={isDisabled()}
+                disabled={isDisabled() || files.length === 0}
                 className='bg-blue-600 text-white w-full' onClick={handleUploadBrand}>
                 {loading ? 'Loading content...' : 'Generated Content'}
               </Button>

@@ -1,3 +1,5 @@
+'use client'
+
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
 import Image from 'next/image'
@@ -8,6 +10,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
 import { ProductType } from '@/database'
+import { useDeleteProductByIdAtom } from '@/store/products/deleteProductById'
+import { useRouter } from 'next/navigation'
 
 type ProductsProps = {
   productId: string
@@ -16,14 +20,20 @@ type ProductsProps = {
 
 export const Products = (props: ProductsProps) => {
   const { productId, products } = props
+
+  const router = useRouter()
+
+  const [{ mutate: deleteProductById }] = useDeleteProductByIdAtom()
+
   return (
     <div className='grid grid-cols-3 gap-6'>
       {products.map(product => {
         const linkToEdit = `${NAVIGATION.PROJECT_DETAILS}/edit/${productId}`
-        const isPending = product.status
+        const src = (product as any).image.find(value => value.default).src
+        const url = `https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/initImages/${src}.png`
 
         return (
-          <Card className='w-[300px]'>
+          <Card key={product.id} className='w-[300px]'>
             <div className='grid gap-2.5 p-4'>
               <div className='block m-0'>
                 <Badge
@@ -37,7 +47,7 @@ export const Products = (props: ProductsProps) => {
                 alt={product.title ?? ''}
                 className='aspect-square object-cover rounded-lg border border-gray-200 w-full overflow-hidden dark:border-gray-800'
                 height={300}
-                src={''}
+                src={url ?? ''}
                 width={300}
               />
               <div className='flex items-center gap-4'>
@@ -46,7 +56,7 @@ export const Products = (props: ProductsProps) => {
                     {product?.title ?? ''}
                   </h2>
                   <p className='text-sm my-2 leading-none'>
-                    {truncateWords(100, product?.description ?? '')}
+                    {truncateWords(20, product?.description ?? '')}
                   </p>
                 </div>
               </div>
@@ -68,7 +78,18 @@ export const Products = (props: ProductsProps) => {
                   <div className='grid gap-4'>
                     <div className='space-y-4'>
                       <p className='font-medium leading-none'>Are you sure?</p>
-                      <Button>Yes, Delete</Button>
+                      <Button onClick={() => {
+
+                        return deleteProductById({
+                          productId: product.id
+                        }, {
+                          onSettled: (res) => {
+                            if (res && res.status === 'fulfilled') {
+                              router.refresh()
+                            }
+                          }
+                        })
+                      }}>Yes, Delete</Button>
                     </div>
                     <div className='grid gap-2'></div>
                   </div>

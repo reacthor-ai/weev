@@ -5,6 +5,7 @@ import { ERROR_MESSAGES } from '@/store/types'
 type CreateBrandVoiceActionAtomParams = {
   organizationId: string;
   clerkId: string;
+  link: string
   brandVoice: {
     title: string;
     description: string;
@@ -18,16 +19,19 @@ type CreateBrandVoiceActionAtomParams = {
       photoGuidelines: string;
     };
   };
-  link: string
 }
 
 export const createBrandVoiceAtom = atomWithMutation(() => ({
   mutationKey: ['createBrandVoice'],
   mutationFn: async (params: CreateBrandVoiceActionAtomParams) => {
     try {
+      const body = JSON.stringify(params)
       const response = await fetch('/dashboard/api/create-brand-voice', {
         method: 'POST',
-        body: JSON.stringify(params)
+        body,
+        headers: {
+          'Content-Type': 'application/json'
+        }
       })
 
       const createBrandVoice = await response.json()
@@ -46,6 +50,7 @@ export const createBrandVoiceAtom = atomWithMutation(() => ({
         result: null
       }
     } catch (error) {
+      console.log({ error })
       return {
         status: 'rejected',
         result: null,

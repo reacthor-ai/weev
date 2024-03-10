@@ -16,3 +16,20 @@ export const getBrandVoicesByOrgId = cache(async () => {
 
   return brandVoices[0].brandVoice
 })
+
+type GetBrandVoiceById = {
+  id: string
+}
+
+export const getBrandVoiceById = async (params: GetBrandVoiceById) => {
+  const { id } = params
+
+  const user = await getUser()
+
+  return await prisma.brandVoice.findUnique({
+    where: {
+      id,
+      organizationId: user.organization[0].id
+    }
+  })
+}

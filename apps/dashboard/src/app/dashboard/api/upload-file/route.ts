@@ -1,18 +1,10 @@
-import { Storage } from '@google-cloud/storage'
+import { gcpStorage } from '@/shared-utils/constant/storage'
 
 export async function POST(req: Request) {
   const { uploadFile, organizationId, userId, fileId, name, fileType } = await req.json()
   let error, success, gcpFileId
 
-  const storage = new Storage({
-    projectId: process.env.PROJECT_ID,
-    credentials: {
-      client_email: process.env.CLIENT_EMAIL,
-      private_key: process.env.PRIVATE_KEY
-    }
-  })
-
-  const bucket = storage.bucket(process.env.BUCKET_NAME as string)
+  const bucket = gcpStorage.bucket(process.env.BUCKET_NAME as string)
   const fileName = `${name}-${fileId}`
 
   try {

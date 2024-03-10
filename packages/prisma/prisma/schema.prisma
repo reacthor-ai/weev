@@ -36,7 +36,7 @@ model User {
 
 model Organization {
   id         String       @id @default(cuid())
-  title      String       @db.VarChar(200)
+  title      String       @db.VarChar(2048)
   project    Project[]
   brandVoice BrandVoice[]
   user       User?        @relation(fields: [userId], references: [id])
@@ -45,9 +45,9 @@ model Organization {
 
 model BrandVoice {
   id             String        @id @default(cuid())
-  type           String
-  title          String        @db.VarChar(300)
-  description    String        @db.VarChar(600)
+  type           String        @db.VarChar(300)
+  title          String        @db.VarChar(2048)
+  description    String        @db.LongText
   link           String
   prompt         Prompt[]
   product        Product[]
@@ -58,7 +58,7 @@ model BrandVoice {
 model Prompt {
   id           String      @id @default(cuid())
   type         PromptType
-  text         String      @db.VarChar(600)
+  text         String      @db.LongText
   brandVoice   BrandVoice? @relation(fields: [brandVoiceId], references: [id])
   brandVoiceId String?
   product      Product?    @relation(fields: [productId], references: [id])
@@ -69,8 +69,8 @@ model Prompt {
 
 model Project {
   id             String        @id @default(cuid())
-  title          String
-  description    String
+  title          String        @db.VarChar(2048)
+  description    String        @db.LongText
   product        Product[]
   organization   Organization? @relation(fields: [organizationId], references: [id])
   organizationId String?
@@ -78,8 +78,8 @@ model Project {
 
 model Product {
   id           String     @id @default(cuid())
-  title        String?
-  description  String?
+  title        String?    @db.VarChar(2048)
+  description  String?    @db.LongText
   prompt       Prompt[]
   image        Image[]
   status       Status

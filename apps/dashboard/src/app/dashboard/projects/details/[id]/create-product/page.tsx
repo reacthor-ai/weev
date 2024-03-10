@@ -6,7 +6,8 @@ import { getBrandVoicesByOrgId } from '@/database/brand'
 import { redirect } from 'next/navigation'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
-export default async function DashboardCreateProducts() {
+export default async function DashboardCreateProducts(props) {
+  console.log({ params: props.params.id })
   const user = await getUser()
 
   const brandVoices = await getBrandVoicesByOrgId()
@@ -28,7 +29,9 @@ export default async function DashboardCreateProducts() {
             <ProductCreateDetails
               organizationId={user.organization[0].id}
               userId={user.id}
+              clerkId={user.clerkId}
               brandVoices={brandVoices}
+              projectId={props.params.id}
             />
           </div>
         </Suspense>
