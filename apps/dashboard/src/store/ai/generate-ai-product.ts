@@ -22,7 +22,8 @@ export const generateGenerateAiProductAtom = atomWithMutation(() => ({
           url: params.image.url
         },
         brand_voice: params.brand_voice,
-        marketing_requirements: params.marketing_requirements
+        marketing_requirements: params.marketing_requirements,
+        extraGenInfo: params.extraGenInfo
       })
 
       const productInfo = JSON.parse(generatedProduct.message.product_info.messages.product_info.messages.trim().replace('json', '').replace('\\', '').replaceAll('\n', '').replaceAll('`', ''))

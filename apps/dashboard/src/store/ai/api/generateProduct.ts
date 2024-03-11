@@ -9,6 +9,16 @@ export type UniqueVoiceParams = {
     prompt: string
     url: string
   }
+
+  extraGenInfo: {
+    width: number
+    height: number
+    control_net: boolean
+    preset_style: string
+    control_net_type: string
+    photo_real_strength: number
+    init_strength: number
+  }
 }
 
 export const generateProductWithAI = async (params: UniqueVoiceParams) => {
@@ -27,7 +37,8 @@ export const generateProductWithAI = async (params: UniqueVoiceParams) => {
       model_id,
       marketing_requirements,
       brand_voice,
-      images
+      images,
+      ...params.extraGenInfo
     }),
     headers: {
       'User-Id': clerkId,
