@@ -1,0 +1,1 @@
+export { CopyrightingProduct } from './CopyrightingProduct'

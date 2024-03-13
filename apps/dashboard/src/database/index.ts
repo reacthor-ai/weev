@@ -1,5 +1,11 @@
-import type { BrandVoice, Organization, Product, Project, User } from 'prisma'
+import type { BrandVoice, Image, Organization, Product, Project, Prompt, User } from 'prisma'
 import { PrismaClient, PromptType } from 'prisma'
+
+type ExtendedProductType = Product & {
+  brandVoice?: BrandVoice
+  prompt?: Prompt[],
+  image?: Image[]
+}
 
 export const prisma = new PrismaClient()
 
@@ -8,6 +14,7 @@ export type {
   Organization as OrganizationPrismaType,
   Project as ProjectType,
   PromptType,
-  Product as ProductType,
-  BrandVoice as BrandVoiceType
+  ExtendedProductType as ProductType,
+  BrandVoice as BrandVoiceType,
+  Image as ImageType
 }

@@ -23,12 +23,13 @@ export default async function DashboardProjectDetails(props: any) {
         enableBackBtn
       >
         <Suspense fallback='Loading...'>
-          <div className='mt-8 scroll-auto h-[100rem]'>
+          <div className='my-8 scroll-auto'>
             {!project?.products || project?.products.length === 0 ? (
               <>No products available!</>
             ) : (
               <Products products={project.products} productId={id} />
             )}
+            <div className='mt-[12rem]' />
           </div>
         </Suspense>
       </PageHeader>

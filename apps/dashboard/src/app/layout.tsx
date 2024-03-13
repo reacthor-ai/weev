@@ -10,11 +10,7 @@ export const metadata: Metadata = {
   title: 'WeeevAI'
 }
 
-export default function RootLayout({
-                                     children
-                                   }: Readonly<{
-  children: React.ReactNode
-}>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <ProviderInitializer>
       <ClerkProvider>

@@ -35,7 +35,7 @@ export const generateGenerateAiProductAtom = atomWithMutation(() => ({
         },
         projectId: params.projectId,
         brandVoiceId: params.brandVoiceId,
-        src: generatedProduct?.message?.product_info?.messages?.image_id,
+        src: generatedProduct?.message?.image_info?.id,
         title: productInfo.product_title ?? '',
         description: productInfo.product_description
       })

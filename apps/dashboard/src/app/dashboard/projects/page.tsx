@@ -21,7 +21,6 @@ export default async function DashboardProjects() {
           <ProjectCard projects={projects} />
         )}
       </Suspense>
-      <div className='mt-[8rem]' />
     </PageHeader>
   )
 }
