@@ -19,6 +19,7 @@ import {
   DIMENSIONS,
   PRE_STYLE
 } from '@/lib/create-details/Product/constant'
+import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
 type ProductCreateDetailsProps = {
   organizationId: string
@@ -101,10 +102,10 @@ export const ProductCreateDetails = (props: ProductCreateDetailsProps) => {
           onSettled: (res) => {
             if (res) {
               if (res.status === 'fulfilled') {
-                // setProgress({ value: 30, title: 'Success taking you to the product page now...' })
-                // setTimeout(() => {
-                //   router.push(NAVIGATION.PROJECTS)
-                // }, 1000)
+                setProgress({ value: 30, title: 'Success taking you to the product page now...' })
+                setTimeout(() => {
+                  router.push(NAVIGATION.PROJECTS)
+                }, 1000)
               } else if (res.status === 'rejected') {
                 setProgress({ value: 20, title: 'Error something went wrong.' })
               }
