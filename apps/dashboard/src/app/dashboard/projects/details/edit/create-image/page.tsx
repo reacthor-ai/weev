@@ -1,5 +1,5 @@
 import { PageHeader } from '@/components/PageHeader'
-import { CreateDetails } from '@/lib/create-details'
+import { CreateImageDetails } from '@/lib/create-details/Product/CreateImage'
 
 export default function DashboardCreateImage() {
   return (
@@ -12,8 +12,8 @@ export default function DashboardCreateImage() {
         btnLink={'save-now'}
         enableBackBtn
       >
-        <div className='mt-8 pb-12 h-screen'>
-          <CreateDetails create={'create-image'} />
+        <div className="mt-8 pb-12 h-screen">
+          <CreateImageDetails />
         </div>
       </PageHeader>
     </>
