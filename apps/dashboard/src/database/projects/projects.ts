@@ -43,7 +43,7 @@ export const getUniqueProjects = async (params: GetUniqueProjectsParams) => {
 
   if (!projects) return null
 
-  const images = projects.product.map((product) =>
+  const images = projects.product.map(product =>
     product.image.find(defaultImage => defaultImage.default)
   )
 
@@ -58,7 +58,8 @@ export const getUniqueProjects = async (params: GetUniqueProjectsParams) => {
         })
 
         const status = uniqueValues?.message?.generations_by_pk?.status
-        const url = uniqueValues?.message?.generations_by_pk?.generated_images[0]?.url
+        const url =
+          uniqueValues?.message?.generations_by_pk?.generated_images[0]?.url
 
         if (status === 'COMPLETE') {
           await prisma.image.update({
@@ -69,8 +70,6 @@ export const getUniqueProjects = async (params: GetUniqueProjectsParams) => {
           })
         }
       }
-
-      console.log('nope')
     }
   })
 
