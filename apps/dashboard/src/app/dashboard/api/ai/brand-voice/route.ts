@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   if (!isFileProcessed) {
     return Response.json({
-      error: fileProcessingError,
+      error: fileProcessingError ?? 'Error when [processFile]',
       success: false,
       rawDocs: null
     })
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
 
   if (!isEmbeddingsSuccess) {
     return Response.json({
-      error: embeddingErrors,
+      error: embeddingErrors ?? 'Error when [processEmbeddings]',
       success: false,
       rawDocs: null
     })
