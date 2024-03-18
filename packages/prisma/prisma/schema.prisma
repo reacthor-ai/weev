@@ -48,8 +48,6 @@ model BrandVoice {
   type           String        @db.VarChar(300)
   title          String        @db.VarChar(2048)
   description    String        @db.LongText
-  // vectorId STORED in GCP
-  vectorId       String        @unique
   link           String
   prompt         Prompt[]
   product        Product[]
