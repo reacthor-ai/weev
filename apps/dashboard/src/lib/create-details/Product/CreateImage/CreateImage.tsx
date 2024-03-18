@@ -16,7 +16,7 @@ export const CreateImageDetails = () => {
     const formData = new FormData()
 
     await uploadFileMutation({
-      uploadFile: formData as any,
+      uploadFile: formData,
       fileId: 'file-id',
       name: 'product-image',
       organizationId: 'org-id',

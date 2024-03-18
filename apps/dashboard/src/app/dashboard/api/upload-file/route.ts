@@ -1,27 +1,32 @@
-import { gcpStorage } from '@/shared-utils/constant/storage'
+import { uploadFile } from '@/api-utils/gcp/uploadFile'
+import { getGCPFile } from '@/api-utils/gcp/getGCPFile'
+import { EXPIRY_15_MINUTES } from '@/shared-utils/constant/constant-default'
 
 export async function POST(req: Request) {
-  const { uploadFile, organizationId, userId, fileId, name, fileType } = await req.json()
-  let error, success, gcpFileId
+  const { text, organizationId, userId, fileId, name, fileType } = await req.json()
+  const fileName = `${organizationId}/${name}-${fileId}.txt`
 
-  const bucket = gcpStorage.bucket(process.env.BUCKET_NAME as string)
-  const fileName = `${name}-${fileId}`
+  const { success: isUploadedSuccess, error: fileUploadError } = await uploadFile({
+    textFile: text,
+    fileId,
+    userId,
+    organizationId,
+    fileType,
+    fileName
+  })
 
-  try {
-    await bucket.file(`${organizationId}/${fileName}.txt`).save(uploadFile, {
-      contentType: fileType,
-      metadata: {
-        organizationId,
-        userId,
-        fileId
-      }
+  if (!isUploadedSuccess) {
+    return Response.json({
+      error: fileUploadError,
+      success: false,
+      fileId: null
     })
-
-    success = true
-    gcpFileId = fileName
-  } catch (err) {
-    error = err
-    success = false
   }
-  return Response.json({ error, success, gcpFileId })
+
+  const { error, success, url } = await getGCPFile(
+    fileName,
+    EXPIRY_15_MINUTES
+  )
+
+  return Response.json({ error, success, url, fileName })
 }

@@ -19,3 +19,17 @@ export const truncateWords = (wordLimit: number, text: string) => {
 
   return finalResult.result
 }
+
+export function getFileTypeFromUrl(url) {
+  // Extract the URL's extension
+  const extension = url.split('.').pop().split(/\#|\?/)[0]
+
+  // Check the extension against known types
+  if (extension === 'pdf') {
+    return 'PDF'
+  } else if (extension === 'txt') {
+    return 'Text'
+  } else {
+    return 'Unknown'
+  }
+}

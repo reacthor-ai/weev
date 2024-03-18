@@ -51,7 +51,6 @@ export const getUniqueProjects = async (params: GetUniqueProjectsParams) => {
     if (image) {
       const isImagePending = image.src.includes('https')
       if (!isImagePending) {
-        console.log('updating images')
         const uniqueValues = await getUniqueGenerationById({
           image_id: image?.src ?? '',
           clerkId: user.clerkId

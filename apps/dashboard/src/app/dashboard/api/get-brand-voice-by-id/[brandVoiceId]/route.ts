@@ -1,4 +1,4 @@
-import { gcpStorage } from '@/shared-utils/constant/storage'
+import { gcpStorage } from '@/api-utils/gcp/storage'
 import { getBrandVoiceById } from '@/database/brand/brand'
 
 export async function GET(

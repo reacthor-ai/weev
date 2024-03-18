@@ -49,7 +49,7 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
     )
   }
 
-  const createBrandVoice = async (gcpLink: string) => {
+  const createBrandVoice = async (gcpLink: string, url: string) => {
     const brandVoice = {
       title,
       description,
@@ -71,7 +71,33 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
       link: gcpLink,
       clerkId,
       organizationId
+    }, {
+      onSettled: (data) => {
+        return storeBrandVoiceIndex(url, data?.result?.id).then((result) => {
+          if (result) {
+            router.push(NAVIGATION.BRAND_VOICE)
+            setLoading(false)
+          }
+        })
+      }
     })
+  }
+
+  const storeBrandVoiceIndex = async (url: string, brandVoiceId: string) => {
+    try {
+      const response = await fetch(`/dashboard/api/ai/brand-voice`, {
+        method: 'POST',
+        body: JSON.stringify({
+          url,
+          namespace: brandVoiceId
+        })
+      })
+
+      const data = await response.json()
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error }
+    }
   }
 
   const handleUploadBrand = async () => {
@@ -91,11 +117,13 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
         const reader = new FileReader()
 
         reader.onload = async (e) => {
-          const typedArray = new Uint8Array((e as any).target.result as any)
+          const typedArray = new Uint8Array(((e as any).target.result as any))
           const pdf = await pdfToText(typedArray)
 
+          const processedText = pdf.replace(/[^a-zA-Z0-9]/g, ' ')
+
           await uploadFile({
-            uploadFile: pdf,
+            text: processedText,
             organizationId,
             userId,
             name: BRAND_VOICE_PREFIX,
@@ -104,10 +132,7 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
           }, {
             onSettled: async (res) => {
               if (res && res.status === 'fulfilled') {
-                await createBrandVoice(res.result.gcpFileId).then(() => {
-                  router.push(NAVIGATION.BRAND_VOICE)
-                  setLoading(false)
-                })
+                return await createBrandVoice(res.result.fileName, res?.result?.url)
               } else router.refresh()
             }
           })
@@ -118,7 +143,7 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
       } else if (file.type === 'text/plain') {
         const text = await file.text()
         await uploadFile({
-          uploadFile: text,
+          text: text,
           organizationId,
           userId,
           name: BRAND_VOICE_PREFIX,
@@ -127,11 +152,8 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
         }, {
           onSettled: async (res) => {
             if (res && res.status === 'fulfilled') {
-              await createBrandVoice(res.result.gcpFileId).then(() => {
-                router.push(NAVIGATION.BRAND_VOICE)
-                setLoading(false)
-              })
-            }
+              return await createBrandVoice(res.result.fileName, res?.result?.url)
+            } else router.refresh()
           }
         })
       }

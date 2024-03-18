@@ -3,7 +3,7 @@ import { useAtom } from 'jotai'
 import { ERROR_MESSAGES } from '@/store/types'
 
 type UploadFileActionAtomParams = {
-  uploadFile: unknown
+  text: unknown
   organizationId: string
   userId: string
   fileId: string

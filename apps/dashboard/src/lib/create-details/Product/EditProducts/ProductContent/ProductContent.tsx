@@ -35,7 +35,7 @@ export const ProductContent = (props: ProductContentProps) => {
           </label>
           <Alert className='my-2'>
             <SpeakerIcon className='h-4 w-4' />
-            <AlertTitle>Brand Voice!</AlertTitle>
+            <AlertTitle>Brand Voice: {product.brandVoice?.title}</AlertTitle>
             <AlertDescription>
               {' \n'}
               {product.brandVoice?.description}

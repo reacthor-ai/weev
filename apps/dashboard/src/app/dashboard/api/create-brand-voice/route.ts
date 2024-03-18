@@ -23,45 +23,34 @@ export async function POST(req: Request) {
     }
   } = params
 
-  const data = await prisma.organization.update({
-    where: {
-      id: organizationId,
-      user: {
-        clerkId
-      }
-    },
+  const data = await prisma.brandVoice.create({
     data: {
-      brandVoice: {
-        create: [
-          {
-            title,
-            description,
-            type,
-            link,
-            prompt: {
-              createMany: {
-                data: [
-                  {
-                    text: audience,
-                    type: 'BRAND_TEXT'
-                  },
-                  {
-                    text: voice,
-                    type: 'BRAND_TEXT'
-                  },
-                  {
-                    text: emotions,
-                    type: 'BRAND_TEXT'
-                  },
-                  {
-                    text: photoGuidelines,
-                    type: 'BRAND_TEXT'
-                  }
-                ]
-              }
+      organizationId,
+      title,
+      description,
+      type,
+      link,
+      prompt: {
+        createMany: {
+          data: [
+            {
+              text: audience,
+              type: 'BRAND_TEXT'
+            },
+            {
+              text: voice,
+              type: 'BRAND_TEXT'
+            },
+            {
+              text: emotions,
+              type: 'BRAND_TEXT'
+            },
+            {
+              text: photoGuidelines,
+              type: 'BRAND_TEXT'
             }
-          }
-        ]
+          ]
+        }
       }
     }
   })

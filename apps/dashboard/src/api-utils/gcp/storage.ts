@@ -8,3 +8,5 @@ export const gcpStorage = new Storage({
   }
 })
 
+export const bucket = gcpStorage.bucket(process.env.BUCKET_NAME as string)
+

@@ -28,8 +28,8 @@ export const UploadFiles = (props: UploadFilesProps) => {
     fileInputRef.current?.click()
   }
 
-  const handleRemoveFile = (index: number) => {
-    setFiles(files.filter((_, idx) => idx !== index))
+  const handleRemoveFile = () => {
+    setFiles([])
   }
 
   return (
@@ -57,7 +57,9 @@ export const UploadFiles = (props: UploadFilesProps) => {
           {files.map((file, index) => (
             <div key={file.name}>
               <div key={index} className='flex pb-5 justify-between items-center'>
-                <Assets title={file.name} onDelete={() => handleRemoveFile(index)} />
+                <Assets title={file.name} onDelete={() => {
+                  return handleRemoveFile()
+                }} />
               </div>
               <Separator />
             </div>
