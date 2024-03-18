@@ -13,20 +13,7 @@ export const CreateImageDetails = () => {
   const [{ mutate: uploadFileMutation }] = useUploadFileAtom()
 
   const uploadFile = async () => {
-    const formData = new FormData()
 
-    await uploadFileMutation({
-      uploadFile: formData,
-      fileId: 'file-id',
-      name: 'product-image',
-      organizationId: 'org-id',
-      userId: 'user-id',
-      fileType: 'multipart/form-data'
-    }, {
-      onSettled: async (res) => {
-        console.log({ res })
-      }
-    })
   }
 
   return (
