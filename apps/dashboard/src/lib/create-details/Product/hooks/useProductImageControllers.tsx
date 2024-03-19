@@ -54,27 +54,31 @@ export const useProductImageControllers = (props: UseProductImageControllersProp
       userId
     }
 
+    const productFileName = `${params.organizationId}/${params.name}-${params.fileId}`
+    const file = files[0]
+    const filename = encodeURIComponent(productFileName)
+
+    const res = await fetch(`/dashboard/api/storage?fileName=${filename}&type=upload`)
+    const { response: { url, fields } } = await res.json()
+
     const formData = new FormData()
+    Object.entries({ ...fields, file }).forEach(([key, value]: any) => {
+      formData.append(key, value)
+    })
 
-    formData.append('file', files[0], files[0].name)
-    formData.append('file-id', params.fileId)
-    formData.append('name', params.name)
-    formData.append('org-id', params.organizationId)
-    formData.append('user-id', params.userId)
+    const upload = await fetch(url, {
+      method: 'POST',
+      body: formData
+    })
 
-    try {
-      const res = await fetch('/dashboard/api/upload-image', {
-        method: 'POST',
-        body: formData
-      })
-      const value = await res.json()
-      if (res.ok) {
-        return { gcpFileId: `${params.name}-${params.fileId}`, url: value.url }
+    if (upload.ok) {
+      const ee = await fetch(`/dashboard/api/storage?fileName=${filename}&type=read`)
+      if (ee.ok) {
+        const url = await ee.json()
+        const productImage = { gcpFileId: `${params.name}-${params.fileId}`, url: url?.response }
+        return productImage
       }
-    } catch (error) {
-      return { gcpFileId: `${params.name}-${params.fileId}` }
     }
-    return { gcpFileId: `${params.name}-${params.fileId}` }
   }
 
   return {
