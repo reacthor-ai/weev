@@ -5,16 +5,9 @@ import { UploadFiles } from '../../Upload'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
-import { useUploadFileAtom } from '@/store/upload-file'
 
 export const CreateImageDetails = () => {
   const [files, setFiles] = useState<File[]>([])
-
-  const [{ mutate: uploadFileMutation }] = useUploadFileAtom()
-
-  const uploadFile = async () => {
-
-  }
 
   return (
     <div className='min-h-screen p-8'>
@@ -42,7 +35,7 @@ export const CreateImageDetails = () => {
                 />
               </div>
             </div>
-            <Button onClick={uploadFile} className='bg-blue-600 text-white w-full'>Generate content</Button>
+            <Button className='bg-blue-600 text-white w-full'>Generate content</Button>
           </div>
           <div className='p-8 space-y-4'>
             <div className='flex flex-col justify-between'>

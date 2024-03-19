@@ -3,10 +3,11 @@ import { useAtom } from 'jotai'
 import { ERROR_MESSAGES } from '@/store/types'
 
 type UploadFileActionAtomParams = {
-  text: unknown
+  fileName: string
   organizationId: string
+  fileContent: unknown
+
   userId: string
-  fileId: string
   name: string
   fileType: string
 }
@@ -14,32 +15,51 @@ type UploadFileActionAtomParams = {
 const uploadFileAtom = atomWithMutation(() => ({
   mutationKey: ['uploadFile'],
   mutationFn: async (params: UploadFileActionAtomParams) => {
+    const { fileName: file } = params
+    const fileName = encodeURIComponent(file)
+
     try {
-      const response = await fetch('/dashboard/api/upload-file', {
-        method: 'POST',
-        body: JSON.stringify(params)
+
+      const res = await fetch(`/api/upload-url?file=${fileName}`)
+      if (!res.ok) {
+        return {
+          status: 'rejected',
+          result: null,
+          error: 'Failed to get upload URL'
+        }
+      }
+
+      const { url, fields } = await res.json()
+
+      const formData = new FormData()
+      Object.entries({ ...fields, file }).forEach(([key, value]: any) => {
+        formData.append(key, value)
       })
 
-      const uploadFile = await response.json()
+      const upload = await fetch(url, {
+        method: 'POST',
+        body: formData
+      })
 
-      if (uploadFile) {
+      if (upload.ok) {
+        const uploadFile = await upload.json()
         return {
           status: 'fulfilled',
           result: uploadFile,
           error: null
         }
-      }
-
-      return {
-        status: 'rejected',
-        error: ERROR_MESSAGES.INTERNAL_SERVER_ERROR,
-        result: null
+      } else {
+        return {
+          status: 'rejected',
+          result: null,
+          error: 'Upload failed'
+        }
       }
     } catch (error) {
       return {
         status: 'rejected',
         result: null,
-        error: error
+        error: error || ERROR_MESSAGES.INTERNAL_SERVER_ERROR
       }
     }
   }

@@ -1,8 +1,8 @@
 [
   {
     "origin": [
-      "https://weeev-dashboard-mu.vercel.app",
-      "https://localhost:3000"
+      "*",
+      "*"
     ],
     "responseHeader": [
       "Content-Type"

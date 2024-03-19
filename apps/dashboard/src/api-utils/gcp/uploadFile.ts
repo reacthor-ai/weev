@@ -14,7 +14,6 @@ export const uploadFile = async (params: UploadFileParams) => {
 
   try {
     await bucket.file(fileName).save(textFile, {
-      contentType: fileType,
       metadata: {
         organizationId,
         userId,

@@ -6,10 +6,9 @@ import { UploadFiles } from '../Upload'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 import { useCreateBrandVoiceAtom } from '@/store/brand-voice/brand-voice'
-import { pdfToText } from 'pdf-ts'
-import { useUploadFileAtom } from '@/store/upload-file'
-import { uuid } from 'uuidv4'
 import { useRouter } from 'next/navigation'
+import { pdfToText } from 'pdf-ts'
+import { uuid } from 'uuidv4'
 import { BRAND_VOICE_PREFIX } from '@/shared-utils/constant/constant-default'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
@@ -36,7 +35,6 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
   const [files, setFiles] = useState<File[]>([])
 
   const [{ mutate: mutateBrandVoice }] = useCreateBrandVoiceAtom()
-  const [{ mutate: uploadFile }] = useUploadFileAtom()
 
   const isDisabled = () => {
     return (
@@ -100,65 +98,116 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
     }
   }
 
-  const handleUploadBrand = async () => {
-    setLoading(true)
+  const uploadBrandFile = async () => {
     if (files.length === 0) {
       alert('Please select files first.')
       return ''
     }
 
-    const formData = new FormData()
-    files.forEach(file => formData.append('files[]', file)) // 'files[]' to indicate multiple values for the same name
-
     const fileId = uuid()
 
-    for (const file of files) {
-      if (file.type === 'application/pdf') {
-        const reader = new FileReader()
+    const brandFileName = `${organizationId}/${BRAND_VOICE_PREFIX}-${fileId}`
 
-        reader.onload = async (e) => {
-          const typedArray = new Uint8Array(((e as any).target.result as any))
-          const pdf = await pdfToText(typedArray)
+    const file = files[0]
+    const filename = encodeURIComponent(brandFileName)
 
-          const processedText = pdf.replace(/[^a-zA-Z0-9]/g, ' ')
+    const res = await fetch(`/dashboard/api/storage?fileName=${filename}&type=upload`)
+    const { response: { url, fields } } = await res.json()
 
-          await uploadFile({
-            text: processedText,
-            organizationId,
-            userId,
-            name: BRAND_VOICE_PREFIX,
-            fileType: 'text/plain',
-            fileId
-          }, {
-            onSettled: async (res) => {
-              if (res && res.status === 'fulfilled') {
-                return await createBrandVoice(res.result.fileName, res?.result?.url)
-              } else router.refresh()
-            }
-          })
+    const formData = new FormData()
+
+    const reader = new FileReader()
+
+    reader.onload = async (e) => {
+      const typedArray = new Uint8Array(((e as any).target.result as any))
+      const pdf = await pdfToText(typedArray)
+
+      const processedText = pdf.replace(/[^a-zA-Z0-9]/g, ' ')
+
+      const textBlob = new Blob([processedText], { type: 'text/plain' })
+
+      Object.entries(fields).forEach(([key, value]) => {
+        formData.append(key, value as string | Blob)
+      })
+
+      formData.append('file', textBlob, brandFileName)
+
+      await fetch(url, {
+        method: 'POST',
+        body: formData
+      }).then(async () => {
+        const ee = await fetch(`/dashboard/api/storage?fileName=${filename}&type=read`, {})
+        if (ee.ok) {
+          const url = await ee.json()
+          return await createBrandVoice(`${BRAND_VOICE_PREFIX}-${fileId}`, url?.response)
+        } else {
+          throw new Error('Not found')
         }
-
-        reader.readAsArrayBuffer(file)
-
-      } else if (file.type === 'text/plain') {
-        const text = await file.text()
-        await uploadFile({
-          text: text,
-          organizationId,
-          userId,
-          name: BRAND_VOICE_PREFIX,
-          fileType: 'text/plain',
-          fileId
-        }, {
-          onSettled: async (res) => {
-            if (res && res.status === 'fulfilled') {
-              return await createBrandVoice(res.result.fileName, res?.result?.url)
-            } else router.refresh()
-          }
-        })
-      }
+      })
     }
+
+    reader.readAsArrayBuffer(file)
   }
+
+  // const handleUploadBrand = async () => {
+  //   setLoading(true)
+  //   if (files.length === 0) {
+  //     alert('Please select files first.')
+  //     return ''
+  //   }
+  //
+  //   const formData = new FormData()
+  //   files.forEach(file => formData.append('files[]', file)) // 'files[]' to indicate multiple values for the same name
+  //
+  //   const fileId = uuid()
+  //
+  //   for (const file of files) {
+  //     if (file.type === 'application/pdf') {
+  //       const reader = new FileReader()
+  //
+  //       reader.onload = async (e) => {
+  //         const typedArray = new Uint8Array(((e as any).target.result as any))
+  //         const pdf = await pdfToText(typedArray)
+  //
+  //         const processedText = pdf.replace(/[^a-zA-Z0-9]/g, ' ')
+  //
+  //         await uploadFile({
+  //           text: processedText,
+  //           organizationId,
+  //           userId,
+  //           name: BRAND_VOICE_PREFIX,
+  //           fileType: 'text/plain',
+  //           fileId
+  //         }, {
+  //           onSettled: async (res) => {
+  //             if (res && res.status === 'fulfilled') {
+  //               return await createBrandVoice(res.result.fileName, res?.result?.url)
+  //             } else router.refresh()
+  //           }
+  //         })
+  //       }
+  //
+  //       reader.readAsArrayBuffer(file)
+  //
+  //     } else if (file.type === 'text/plain') {
+  //       const text = await file.text()
+  //       await uploadFile({
+  //         text: text,
+  //         organizationId,
+  //         userId,
+  //         name: BRAND_VOICE_PREFIX,
+  //         fileType: 'text/plain',
+  //         fileId
+  //       }, {
+  //         onSettled: async (res) => {
+  //           if (res && res.status === 'fulfilled') {
+  //             return await createBrandVoice(res.result.fileName, res?.result?.url)
+  //           } else router.refresh()
+  //         }
+  //       })
+  //     }
+  //   }
+  // }
 
   return (
     <div className='min-h-screen p-8'>
@@ -200,7 +249,7 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
               </div>
               <Button
                 disabled={isDisabled() || files.length === 0}
-                className='bg-blue-600 text-white w-full' onClick={handleUploadBrand}>
+                className='bg-blue-600 text-white w-full' onClick={uploadBrandFile}>
                 {loading ? 'Loading content...' : 'Generated Content'}
               </Button>
             </div>
