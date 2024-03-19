@@ -6,7 +6,7 @@ export const getGCPFile = async (fileName: string, expires: string | number | Da
   try {
     const [bucketResponse] = await bucket.file(fileName).getSignedUrl({
       version: 'v4',
-      action: 'write',
+      action: 'read',
       expires
     })
 
