@@ -1,4 +1,3 @@
-import { ProductContent } from './ProductContent'
 import { ProductImage } from './ProductImage'
 import { BrandVoiceType, ProductType } from '@/database'
 
@@ -18,12 +17,6 @@ export const EditProducts = (props: EditProductsProps) => {
       <div className={'mb-4'}>
         <h2 className='text-xl font-semibold'>Edit your your product copywriter</h2>
       </div>
-
-      <ProductContent
-        clerkId={clerkId}
-        brandVoices={brandVoices}
-        product={product}
-      />
       {
         product.image?.map((image) => {
           return <ProductImage

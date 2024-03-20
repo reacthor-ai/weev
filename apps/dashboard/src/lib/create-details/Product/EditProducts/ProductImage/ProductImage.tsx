@@ -17,23 +17,18 @@ import {
   PRE_STYLE
 } from '@/lib/create-details/Product/constant'
 import { useProductImageControllers } from '@/lib/create-details/Product/hooks'
-import { PlusCircledIcon } from '@radix-ui/react-icons'
-import { useCreateImageAtom } from '@/store/products/createImage'
-import { useToast } from '@/components/ui/use-toast'
-import { ImageType } from '@/database'
+import { InitImageUploadOutput } from '@leonardo-ai/sdk/src/sdk/models/operations/uploadinitimage'
+import { modelList } from '@/api-utils/leonardo/constant'
 
 type ProductImageProps = {
   organizationId: string
   userId: string
   productId: string
-  image: ImageType
 }
 
 export const ProductImage = (props: ProductImageProps) => {
-  const { organizationId, userId, productId, image } = props
+  const { organizationId, userId, productId } = props
   const [files, setFiles] = useState<File[]>([])
-  const [{ mutate: mutateImage }] = useCreateImageAtom()
-  const { toast } = useToast()
 
   const {
     uploadFile,
@@ -55,7 +50,40 @@ export const ProductImage = (props: ProductImageProps) => {
     files,
     userId
   })
-  console.log({ dd: image })
+
+  const generateNewProductImage = async () => {
+    uploadFile().then(
+      async (fileUploadRes) => {
+        const uploadProductImgResponse = await fetch('/dashboard/api/ai/upload-product-image')
+        const { result: productImgUploadData, success }: {
+          result: InitImageUploadOutput | null | undefined,
+          success: boolean
+        } = await uploadProductImgResponse.json()
+
+        if (success && productImgUploadData && productImgUploadData.id) {
+          const body = JSON.stringify({
+            imageId: '',
+            model: { id: modelList['PhotoReal'] },
+            options: {
+              photoRealStrength: '',
+              presetStyle: '',
+              contrastRatio: '',
+              height: dimensionsValue.value.height,
+              width: dimensionsValue.value.width,
+              prompt,
+              initStrength: ''
+            }
+          })
+
+          const genProductImg = await fetch('/dashboard/api/ai/generate-product-image', {
+            method: 'POST',
+            body
+          })
+        }
+      }
+    )
+  }
+
   return (
     <div className='min-h-screen mt-6'>
       <div className='bg-white rounded-lg pb-10 shadow-lg overflow-hidden'>
@@ -63,19 +91,6 @@ export const ProductImage = (props: ProductImageProps) => {
         <div className='grid grid-cols-2'>
 
           <div className='border-r border-gray-200 p-8 space-y-6'>
-            <Button onClick={() => mutateImage({ productId, src: '' }, {
-              onSettled: (res) => {
-                if (res && res.status === 'fulfilled') {
-                  toast({
-                    title: 'Success!',
-                    description: 'Please refresh the page!'
-                  })
-                }
-              }
-            })}>
-              <PlusCircledIcon className='h-4 w-4 mr-2' />
-              Add Image
-            </Button>
 
             <h1 className='text-2xl font-bold'>Image Generation</h1>
             <div>
@@ -98,17 +113,13 @@ export const ProductImage = (props: ProductImageProps) => {
 
           <div className='p-8 space-y-4'>
             <div>
-              {
-                image.src.length === 0 ? <p>No image yet!</p> : (
-                  <Image
-                    src={`https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/initImages/${image.src}.png`}
-                    alt={'image logo'}
-                    width={500}
-                    height={500}
-                    className='rounded-md'
-                  />
-                )
-              }
+              <Image
+                src={`https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/128ec322-26f3-447e-8b92-bf5b644cb76b/variations/Default_Experience_the_perfect_blend_of_fashion_and_sustainabi_0_128ec322-26f3-447e-8b92-bf5b644cb76b_0.jpg?w=512`}
+                alt={'image logo'}
+                width={500}
+                height={500}
+                className='rounded-md'
+              />
             </div>
 
             <div>
