@@ -39,6 +39,7 @@ export default async function DashboardCreateProducts(props) {
             <ProductImage
               organizationId={user.organization[0].id}
               userId={user.id}
+              clerkId={user.clerkId}
               productId={props.params.id}
             />
 

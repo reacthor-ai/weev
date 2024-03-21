@@ -16,24 +16,28 @@ export async function POST(req: Request) {
     }
   } = await req.json()
 
-  const model = modelList[id]
-
-  if (modelList['PhotoReal'] === model) {
+  if (modelList['PhotoReal'] === id) {
     try {
-      const result = await imageModelSdk.generation.createGeneration({
+      const uploadedImageSettings = {
         initImageId: imageId,
+        initStrength
+      }
+
+      const result = await imageModelSdk.generation.createGeneration({
+        ...(imageId && { ...uploadedImageSettings }),
         photoReal: true,
+        public: false,
         photoRealStrength,
         presetStyle,
         alchemy: true,
+        modelId: null,
         expandedDomain: true,
         contrastRatio,
-        initStrength,
+        numImages: 1,
         width,
-        height,
-        prompt
+        prompt,
+        height
       })
-
       if (result.object && result.object.sdGenerationJob) {
         const genId = result.object.sdGenerationJob.generationId
 
@@ -45,21 +49,20 @@ export async function POST(req: Request) {
             result: genId,
             error: null,
             success: true
-          })
+          }, { status: 200 })
         }
       }
     } catch (error) {
       return Response.json({
         result: null,
         error: error,
-        success: true
-      })
+        success: false
+      }, { status: 404 })
     }
   }
-
   return Response.json({
     result: null,
-    error: null,
-    success: true
-  })
+    error: 'Error your model ID could be wrong',
+    success: false
+  }, { status: 404 })
 }

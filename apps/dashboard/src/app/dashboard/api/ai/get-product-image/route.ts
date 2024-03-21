@@ -1,10 +1,18 @@
 import { imageModelSdk } from '@/api-utils/leonardo'
+import { NextRequest } from 'next/server'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const query = request.nextUrl.searchParams
+  const id = query.get('id')
+
+  if (!id) return Response.json({
+    result: null,
+    error: 'No id!',
+    success: false
+  })
+
   try {
-    const result = await imageModelSdk.initImage.uploadInitImage({
-      extension: 'png'
-    })
+    const result = await imageModelSdk.generation.getGenerationById(id)
 
     if (!result.object) {
       return Response.json({
@@ -14,10 +22,10 @@ export async function GET() {
       }, { status: 404 })
     }
 
-    const url = result.object.uploadInitImage?.url
-    const imageId = result.object.uploadInitImage?.id
+    const url = result.object.generationsByPk?.generatedImages
+    const status = result.object.generationsByPk?.status
 
-    if (!url || !imageId) {
+    if (!url) {
       return Response.json({
         result: null,
         error: 'Error no imageId or url',
@@ -26,7 +34,10 @@ export async function GET() {
     }
 
     return Response.json({
-      result: result.object.uploadInitImage,
+      result: {
+        url,
+        status
+      },
       error: null,
       success: true
     })
