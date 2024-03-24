@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
-import Image from 'next/image'
 import { FileEditIcon } from 'lucide-react'
 import { truncateWords } from '@/shared-utils/text'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import { Button } from '@/components/ui/button'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
-import { ProductType } from '@/database'
+import { ImageType, ProductType } from '@/database'
 import { useDeleteProductByIdAtom } from '@/store/products/deleteProductById'
+import Image from 'next/image'
 
 type ProductsProps = {
   productId: string
@@ -23,22 +23,12 @@ export const Products = (props: ProductsProps) => {
 
   return (
     <div className='grid grid-cols-3 gap-6'>
-      {products.map(product => {
+      {products.map(async product => {
         const linkToEdit = `${NAVIGATION.PROJECT_DETAILS}/edit/${product.id}`
-        const image = product?.image?.find(image => image.default)
-        const src = image?.src.includes('http') ? image.src : ''
-
+        const src = (product?.image as unknown as ImageType).src
         return (
           <Card key={product.id} className='w-[300px]'>
             <div className='grid gap-2.5 p-4'>
-              {/*<div className='block m-0'>*/}
-              {/*  <Badge*/}
-              {/*    className='text-center rounded-full w-[100%] px-2 py-1 text-xs font-semibold uppercase text-blue-800 bg-blue-200'*/}
-              {/*    variant='secondary'*/}
-              {/*  >*/}
-              {/*    {currentStatus[status]}*/}
-              {/*  </Badge>*/}
-              {/*</div>*/}
               <Image
                 alt={product.title ?? ''}
                 className='aspect-square object-cover rounded-lg border border-gray-200 w-full overflow-hidden dark:border-gray-800'

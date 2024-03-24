@@ -74,13 +74,24 @@ export const createProduct = async (params: CreateProductParams) => {
 type UpdateProductWithImage = {
   productId: string
   projectId: string
-  initialImage: string
+  imageSettingsPrompt: PromptImageType[]
+  generalInputImage?: string
   imagePrompt: string
   src: string
 }
 
+type PromptImageType = {
+  text: string
+  type: 'PRODUCT_IMAGE'
+}
+
 export const updateProductWithImage = async (params: UpdateProductWithImage) => {
-  const { productId, projectId, initialImage, imagePrompt, src } = params
+  const { productId, projectId, generalInputImage, imageSettingsPrompt, imagePrompt, src } = params
+
+  const imagePrompts: PromptImageType[] = imageSettingsPrompt.map(va => ({
+    text: va.text,
+    type: 'PRODUCT_IMAGE'
+  }))
 
   return await prisma.product.update({
     where: {
@@ -93,12 +104,12 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
         createMany: {
           data: [
             {
-              text: initialImage,
-              type: 'PRODUCT_IMAGE'
-            },
-            {
               text: imagePrompt,
               type: 'PRODUCT_TEXT'
+            },
+            {
+              text: generalInputImage ?? 'No input image',
+              type: 'PRODUCT_IMAGE'
             }
           ]
         }
@@ -107,7 +118,12 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
         create: {
           default: true,
           src,
-          type: 'GENERAL_IMAGE'
+          type: 'GENERAL_IMAGE',
+          prompt: {
+            createMany: {
+              data: [...imagePrompts]
+            }
+          }
         }
       }
     }

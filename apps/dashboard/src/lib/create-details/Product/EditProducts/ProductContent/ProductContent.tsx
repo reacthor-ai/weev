@@ -1,13 +1,14 @@
 'use client'
 
 import { Textarea } from '@/components/ui/textarea'
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { BrandVoiceType } from '@/database'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useChat } from 'ai/react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { AlertCircleIcon } from 'lucide-react'
+import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 
 type ProductContentProps = {
   clerkId: string
@@ -22,6 +23,22 @@ export const ProductContent = (props: ProductContentProps) => {
 
   const [brandVoiceId, setBrandVoiceId] = useState<string>('')
   const [isProgress, setIsProgress] = useState<boolean>(false)
+
+  const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
+
+  // Get a new searchParams string by merging the current
+  // searchParams with a provided key/value pair
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set(name, value)
+
+      return params.toString()
+    },
+    [searchParams]
+  )
 
   const { messages, isLoading, input, handleInputChange, handleSubmit } = useChat({
     api: '/dashboard/api/ai/retrieve-brand-voice',
@@ -50,8 +67,10 @@ export const ProductContent = (props: ProductContentProps) => {
     if (response.ok) {
       const product = await response.json()
 
-      if (product?.success) {
+      if (product?.success && product?.result) {
         setIsProgress(false)
+
+        router.push(pathname + '?' + createQueryString('productId', product?.result?.id))
       }
     }
   }

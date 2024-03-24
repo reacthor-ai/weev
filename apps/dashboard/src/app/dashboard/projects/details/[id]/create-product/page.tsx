@@ -40,7 +40,7 @@ export default async function DashboardCreateProducts(props) {
               organizationId={user.organization[0].id}
               userId={user.id}
               clerkId={user.clerkId}
-              productId={props.params.id}
+              projectId={props.params.id}
             />
 
             <div className='mt-[8rem]' />

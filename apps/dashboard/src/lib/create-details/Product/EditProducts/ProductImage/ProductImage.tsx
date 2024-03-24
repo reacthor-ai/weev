@@ -4,9 +4,9 @@ import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
 import { UploadFiles } from '@/lib/create-details/Upload'
-import { useCallback, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
-import { PaintbrushIcon } from 'lucide-react'
+import { AlertCircleIcon, PaintbrushIcon } from 'lucide-react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
 import { Slider } from '@/components/ui/slider'
@@ -15,40 +15,39 @@ import { useProductImageControllers } from '@/lib/create-details/Product/hooks'
 import { modelList } from '@/api-utils/leonardo/constant'
 import { Checkbox } from '@/components/ui/checkbox'
 import { WEEEV_AI_API_URL } from '@/shared-utils/constant/constant-default'
+import {
+  useListenImageGeneration
+} from '@/lib/create-details/Product/EditProducts/ProductImage/useListenImageGeneration'
+import { useSearchParams } from 'next/navigation'
 
 type ProductImageProps = {
   organizationId: string
   userId: string
-  productId: string
+  projectId: string
   clerkId: string
 }
 
 export const ProductImage = (props: ProductImageProps) => {
-  const { organizationId, userId, clerkId } = props
+  const { organizationId, userId, clerkId, projectId } = props
   const [files, setFiles] = useState<File[]>([])
   const [prompts, setPrompts] = useState('')
   const [generationId, setGenerationId] = useState<string | null>(null)
   const [skipImage, setSkipImage] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
-  const [url, setUrl] = useState<string | null>(null)
-  const [startPolling, setStartPolling] = useState(false)
+  const { messages } = useListenImageGeneration({ setIsLoading })
 
-  const pollingCallback = async () => {
-    try {
-      const response = await fetch(`/dashboard/api/ai/get-product-image-status?generationId=${generationId}`)
-      if (!response.ok) throw new Error('Network response was not ok')
-      const data = await response.json()
-      console.log({ data })
-      if (data.result && 'url' in data.result) {
-        setIsLoading(false)
-        setUrl(data.result.url)
-        return data
-      }
-    } catch (error) {
-      console.error('Fetch error:', error)
-      throw error
-    }
-  }
+  const [loadingUploadImage, setLoadingUploadImage] = useState(false)
+
+  const [inputImage, setInputImage] = useState<string | null>(null)
+  const productInfo = useSearchParams()
+
+  const productId = productInfo.get('productId')
+
+  const image = useMemo(() => {
+    if (!messages) return null
+
+    return messages.images.find((image) => image.generationId === generationId)
+  }, [generationId, messages])
 
   const {
     uploadFile,
@@ -58,6 +57,7 @@ export const ProductImage = (props: ProductImageProps) => {
     controlNetDetails,
     imageStrength,
     setImageStrength,
+    uploadImgGCP,
     setDepthOfField,
     setPreStyle,
     controlNetType,
@@ -78,6 +78,7 @@ export const ProductImage = (props: ProductImageProps) => {
         async (fileUploadRes) => {
           try {
             if (!fileUploadRes?.url) return
+            setInputImage(fileUploadRes.gcpFileId)
 
             const uploadProductImgResponse = await fetch(`${WEEEV_AI_API_URL}/product/upload-single-image`, {
               method: 'POST',
@@ -103,6 +104,7 @@ export const ProductImage = (props: ProductImageProps) => {
           }
         }
       )
+        .catch(() => setIsLoading(false))
 
     }
   }, [skipImage])
@@ -136,6 +138,64 @@ export const ProductImage = (props: ProductImageProps) => {
     }
   }
 
+  const saveImage = async () => {
+    if (!image && !productInfo) {
+      alert('Please add your image or create your content first.')
+    }
+
+    const response = await fetch(image!?.url)
+
+    const blob = await response.blob()
+
+    uploadImgGCP(blob).then(async (gcp) => {
+      setLoadingUploadImage(true)
+      if (gcp) {
+
+        const body = JSON.stringify({
+          productId: productId,
+          projectId,
+          imageSettingsPrompt: [
+            {
+              text: `model_id: {${modelList['PhotoReal']}}`
+            },
+            {
+              text: `photoRealStrength: {${depthValue.value}}`
+            },
+            {
+              text: `presetStyle: {${preStyle}}`
+            },
+            {
+              text: `contrastRatio: {${imageStrength[0]}}`
+            },
+            {
+              text: `height {${dimensionsValue.value.height}}`
+            },
+            {
+              text: `width {${dimensionsValue.value.width}}`
+            },
+            {
+              text: `initStrength {${imageStrength[0]}}`
+            }
+          ],
+          generalInputImage: inputImage,
+          imagePrompt: prompts,
+          src: gcp.gcpFileId
+        })
+        const response = await fetch('/dashboard/api/update-product-image', {
+          method: 'post',
+          body
+        })
+        const data = await response.json()
+
+        if (data.success) {
+          setLoadingUploadImage(false)
+        }
+      }
+    })
+  }
+
+  if (!productId) return null
+
   return (
     <div className='min-h-screen mt-6'>
       <div className='bg-white rounded-lg pb-10 shadow-lg overflow-hidden'>
@@ -160,14 +220,31 @@ export const ProductImage = (props: ProductImageProps) => {
                 />
               </div>
             </div>
-            <Button disabled={isLoading} onClick={generateNewProductImage} className='bg-blue-600 text-white w-full'>
+            <Button disabled={isLoading || prompts.length === 0} onClick={generateNewProductImage}
+                    className='bg-blue-600 text-white w-full'>
               {isLoading ? 'Generating Image...' : 'Generate Image'}
             </Button>
           </div>
 
 
           <div className='p-8 space-y-4'>
+            {
+              loadingUploadImage && (
+                <>
+                  <AlertCircleIcon className='h-4 w-4 text-white' />
+                  <AlertTitle>Heads up!</AlertTitle>
+                  <AlertDescription>
+                    Saving image...
+                  </AlertDescription>
+                  <Alert className={'mb-3'}>
+                  </Alert>
+                  <br />
+
+                </>
+              )
+            }
             <div>
+              {image && <Button onClick={saveImage}>Save</Button>}
               {
                 isLoading ? (
                   <div className='bg-white rounded-lg shadow-md p-4 animate-pulse'>
@@ -176,10 +253,10 @@ export const ProductImage = (props: ProductImageProps) => {
                 ) : (
                   <>
                     {
-                      !url ? <>Generate your image for your brand</> : (
+                      !image ? <>Generate your image for your brand</> : (
                         <Image
-                          src={`https://cdn.leonardo.ai/users/655cab70-b1ba-4eb5-b878-3ba0ec055fc5/generations/128ec322-26f3-447e-8b92-bf5b644cb76b/variations/Default_Experience_the_perfect_blend_of_fashion_and_sustainabi_0_128ec322-26f3-447e-8b92-bf5b644cb76b_0.jpg?w=512`}
-                          alt={'image logo'}
+                          src={image.url}
+                          alt={image.url}
                           width={700}
                           height={500}
                           className='rounded-md'
