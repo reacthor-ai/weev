@@ -149,66 +149,6 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
     reader.readAsArrayBuffer(file)
   }
 
-  // const handleUploadBrand = async () => {
-  //   setLoading(true)
-  //   if (files.length === 0) {
-  //     alert('Please select files first.')
-  //     return ''
-  //   }
-  //
-  //   const formData = new FormData()
-  //   files.forEach(file => formData.append('files[]', file)) // 'files[]' to indicate multiple values for the same name
-  //
-  //   const fileId = uuid()
-  //
-  //   for (const file of files) {
-  //     if (file.type === 'application/pdf') {
-  //       const reader = new FileReader()
-  //
-  //       reader.onload = async (e) => {
-  //         const typedArray = new Uint8Array(((e as any).target.result as any))
-  //         const pdf = await pdfToText(typedArray)
-  //
-  //         const processedText = pdf.replace(/[^a-zA-Z0-9]/g, ' ')
-  //
-  //         await uploadFile({
-  //           text: processedText,
-  //           organizationId,
-  //           userId,
-  //           name: BRAND_VOICE_PREFIX,
-  //           fileType: 'text/plain',
-  //           fileId
-  //         }, {
-  //           onSettled: async (res) => {
-  //             if (res && res.status === 'fulfilled') {
-  //               return await createBrandVoice(res.result.fileName, res?.result?.url)
-  //             } else router.refresh()
-  //           }
-  //         })
-  //       }
-  //
-  //       reader.readAsArrayBuffer(file)
-  //
-  //     } else if (file.type === 'text/plain') {
-  //       const text = await file.text()
-  //       await uploadFile({
-  //         text: text,
-  //         organizationId,
-  //         userId,
-  //         name: BRAND_VOICE_PREFIX,
-  //         fileType: 'text/plain',
-  //         fileId
-  //       }, {
-  //         onSettled: async (res) => {
-  //           if (res && res.status === 'fulfilled') {
-  //             return await createBrandVoice(res.result.fileName, res?.result?.url)
-  //           } else router.refresh()
-  //         }
-  //       })
-  //     }
-  //   }
-  // }
-
   return (
     <div className='min-h-screen p-8'>
       <div className='bg-white rounded-lg shadow-lg overflow-hidden'>

@@ -1,7 +1,8 @@
 import { cache } from 'react'
-import { prisma } from '@/database'
+import { ImageType, prisma, ProductType } from '@/database'
 import { getUser } from '@/database/user'
-import { getUniqueGenerationById } from '@/store/ai/api/getImageGeneration'
+import { bucket } from '@/api-utils/gcp/storage'
+import { EXPIRY_7_DAYS } from '@/shared-utils/constant/constant-default'
 
 export const getOrganizationProjects = cache(async () => {
   const user = await getUser()
@@ -43,37 +44,40 @@ export const getUniqueProjects = async (params: GetUniqueProjectsParams) => {
 
   if (!projects) return null
 
-  const images = projects.product.map(product =>
-    product.image.find(defaultImage => defaultImage.default)
-  )
+  const getImage = async (id: string) => {
+    const file = `${projects.organizationId}/${id}`
+    const [url] = await bucket.file(file)
+      .getSignedUrl({
+        version: 'v4',
+        action: 'read',
+        expires: EXPIRY_7_DAYS
+      })
 
-  await images.map(async image => {
-    if (image) {
-      const isImagePending = image.src.includes('https')
-      if (!isImagePending) {
-        const uniqueValues = await getUniqueGenerationById({
-          image_id: image?.src ?? '',
-          clerkId: user.clerkId
-        })
+    return url
+  }
 
-        const status = uniqueValues?.message?.generations_by_pk?.status
-        const url =
-          uniqueValues?.message?.generations_by_pk?.generated_images[0]?.url
+  const fetchAndSetProducts = async (projects) => {
+    return await Promise.all(projects.product.map(async (product) => {
+      const images = product.image.find(i => i.default)
 
-        if (status === 'COMPLETE') {
-          await prisma.image.update({
-            data: {
-              src: url
-            },
-            where: { id: image?.id }
-          })
+      if (images) {
+        const res = await getImage(images.src)
+        return {
+          ...product,
+          image: {
+            ...images,
+            src: res
+          } as ImageType
         }
       }
-    }
-  })
+      return product
+    }))
+  }
+
+  const products = await fetchAndSetProducts(projects)
 
   return {
-    products: projects.product,
+    products: products as unknown as ProductType[],
     details: {
       title: projects.title,
       description: projects.description

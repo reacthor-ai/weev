@@ -9,7 +9,7 @@ import {
 } from '@/lib/create-details/Product/constant'
 import { useMemo, useState } from 'react'
 import { uuid } from 'uuidv4'
-import { PRODUCT_IMAGE_PREFIX } from '@/shared-utils/constant/constant-default'
+import { PRODUCT_IMAGE_PREFIX, UPLOADED_IMAGE_PREFIX } from '@/shared-utils/constant/constant-default'
 
 type UseProductImageControllersProps = {
   organizationId: string
@@ -81,8 +81,43 @@ export const useProductImageControllers = (props: UseProductImageControllersProp
     }
   }
 
+  const uploadImgGCP = async (fileBlob: Blob) => {  // fileBlob is either a File or Blob object
+    const params = {
+      fileId: uuid(),
+      name: UPLOADED_IMAGE_PREFIX,
+      organizationId,
+      userId
+    }
+
+    const productFileName = `${params.organizationId}/${params.name}-${params.fileId}`
+    const filename = encodeURIComponent(productFileName)
+
+    const res = await fetch(`/dashboard/api/storage?fileName=${filename}&type=upload`)
+    const { response: { url, fields } } = await res.json()
+
+    const formData = new FormData()
+    Object.entries({ ...fields, file: fileBlob }).forEach(([key, value]: any) => {
+      formData.append(key, value)
+    })
+
+    const upload = await fetch(url, {
+      method: 'POST',
+      body: formData
+    })
+
+    if (upload.ok) {
+      const ee = await fetch(`/dashboard/api/storage?fileName=${filename}&type=read`)
+      if (ee.ok) {
+        const url = await ee.json()
+        const productImage = { gcpFileId: `${params.name}-${params.fileId}`, url: url?.response }
+        return productImage
+      }
+    }
+  }
+
   return {
     uploadFile,
+    uploadImgGCP,
     depthValue,
     depthOfField,
     dimensionsValue,

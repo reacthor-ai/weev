@@ -9,9 +9,9 @@ export async function POST(req: Request) {
     },
     brandVoiceId,
     projectId,
-    src,
     title,
-    description
+    description,
+    src
   } = params
 
   const data = await prisma.product.create({

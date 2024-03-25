@@ -26,3 +26,106 @@ export const getProductById = async (params: GetProductId) => {
 
   return product
 }
+
+type CreateProductParams = {
+  prompt: {
+    text: string
+  }
+
+  brandVoiceId: string
+  projectId: string
+  title: string
+  description: string
+}
+
+export const createProduct = async (params: CreateProductParams) => {
+  const {
+    prompt: { text },
+    description,
+    projectId,
+    brandVoiceId,
+    title
+  } = params
+
+  return await prisma.product.create({
+    data: {
+      title,
+      description,
+      projectId,
+      brandVoiceId,
+      status: 'IN_PROGRESS',
+      prompt: {
+        createMany: {
+          data: [
+            {
+              text, // text prompt
+              type: 'PRODUCT_TEXT'
+            }
+          ]
+        }
+      }
+    },
+    include: {
+      brandVoice: false
+    }
+  })
+}
+
+type UpdateProductWithImage = {
+  productId: string
+  projectId: string
+  imageSettingsPrompt: PromptImageType[]
+  generalInputImage?: string
+  imagePrompt: string
+  src: string
+}
+
+type PromptImageType = {
+  text: string
+  type: 'PRODUCT_IMAGE'
+}
+
+export const updateProductWithImage = async (params: UpdateProductWithImage) => {
+  const { productId, projectId, generalInputImage, imageSettingsPrompt, imagePrompt, src } = params
+
+  const imagePrompts: PromptImageType[] = imageSettingsPrompt.map(va => ({
+    text: va.text,
+    type: 'PRODUCT_IMAGE'
+  }))
+
+  return await prisma.product.update({
+    where: {
+      id: productId,
+      projectId
+    },
+    data: {
+      status: 'DONE',
+      prompt: {
+        createMany: {
+          data: [
+            {
+              text: imagePrompt,
+              type: 'PRODUCT_TEXT'
+            },
+            {
+              text: generalInputImage ?? 'No input image',
+              type: 'PRODUCT_IMAGE'
+            }
+          ]
+        }
+      },
+      image: {
+        create: {
+          default: true,
+          src,
+          type: 'GENERAL_IMAGE',
+          prompt: {
+            createMany: {
+              data: [...imagePrompts]
+            }
+          }
+        }
+      }
+    }
+  })
+}

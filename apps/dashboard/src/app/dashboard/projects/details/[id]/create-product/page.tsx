@@ -1,10 +1,11 @@
 import { PageHeader } from '@/components/PageHeader'
-import { ProductCreateDetails } from '@/lib/create-details/Product'
 import { getUser } from '@/database/user'
 import { Suspense } from 'react'
 import { getBrandVoicesByOrgId } from '@/database/brand'
 import { redirect } from 'next/navigation'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
+import { ProductContent } from '@/lib/create-details/Product/EditProducts/ProductContent'
+import { ProductImage } from '@/lib/create-details/Product/EditProducts/ProductImage'
 
 export default async function DashboardCreateProducts(props) {
   const user = await getUser()
@@ -25,11 +26,20 @@ export default async function DashboardCreateProducts(props) {
       >
         <Suspense fallback={'Loading...'}>
           <div className={''}>
-            <ProductCreateDetails
+            <ProductContent
               organizationId={user.organization[0].id}
               userId={user.id}
               clerkId={user.clerkId}
+              projectId={props.params.id}
               brandVoices={brandVoices}
+            />
+
+            <div className='mt-[8rem]' />
+
+            <ProductImage
+              organizationId={user.organization[0].id}
+              userId={user.id}
+              clerkId={user.clerkId}
               projectId={props.params.id}
             />
 

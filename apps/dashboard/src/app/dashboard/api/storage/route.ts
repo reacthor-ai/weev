@@ -1,13 +1,14 @@
 import { NextRequest } from 'next/server'
 import { bucket } from '@/api-utils/gcp/storage'
 import { GenerateSignedPostPolicyV4Options } from '@google-cloud/storage'
-import { EXPIRY_15_MINUTES } from '@/shared-utils/constant/constant-default'
+import { EXPIRY_15_MINUTES, EXPIRY_7_DAYS } from '@/shared-utils/constant/constant-default'
 
 export async function GET(request: NextRequest) {
   const query = request.nextUrl.searchParams
 
   const fileName = query.get('fileName')
   const type = query.get('type')
+  const expires_seven_days = query.get('expires_seven_days')
 
   if (!fileName) {
     return Response.json({
@@ -38,7 +39,7 @@ export async function GET(request: NextRequest) {
       .getSignedUrl({
         version: 'v4',
         action: 'read',
-        expires: EXPIRY_15_MINUTES
+        expires: expires_seven_days ? EXPIRY_7_DAYS : EXPIRY_15_MINUTES
       })
 
     return Response.json({
