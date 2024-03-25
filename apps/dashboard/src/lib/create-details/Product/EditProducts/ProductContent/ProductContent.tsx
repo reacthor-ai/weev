@@ -16,10 +16,12 @@ type ProductContentProps = {
   organizationId: string
   userId: string
   projectId: string
+  actionType: 'create-product' | 'update-product'
+  productId: string | null
 }
 
 export const ProductContent = (props: ProductContentProps) => {
-  const { brandVoices, projectId } = props
+  const { brandVoices, projectId, actionType, productId } = props
 
   const [brandVoiceId, setBrandVoiceId] = useState<string>('')
   const [isProgress, setIsProgress] = useState<boolean>(false)
@@ -28,8 +30,6 @@ export const ProductContent = (props: ProductContentProps) => {
   const pathname = usePathname()
   const searchParams = useSearchParams()
 
-  // Get a new searchParams string by merging the current
-  // searchParams with a provided key/value pair
   const createQueryString = useCallback(
     (name: string, value: string) => {
       const params = new URLSearchParams(searchParams.toString())
@@ -40,13 +40,26 @@ export const ProductContent = (props: ProductContentProps) => {
     [searchParams]
   )
 
-  const { messages, isLoading, input, handleInputChange, handleSubmit } = useChat({
+  const {
+    messages,
+    isLoading,
+    input,
+    handleInputChange,
+    handleSubmit,
+    reload,
+    setMessages
+  } = useChat({
     api: '/dashboard/api/ai/retrieve-brand-voice',
     body: {
       brandVoiceId,
       type_of_completion: 'generate-product'
     }
   })
+
+  const onSubmit = (e, c) => {
+    setMessages([])
+    return handleSubmit(e, c)
+  }
 
   const isDisabled = () => {
     return input.length <= 0 || brandVoiceId.length <= 0
@@ -60,7 +73,9 @@ export const ProductContent = (props: ProductContentProps) => {
       body: JSON.stringify({
         output: content,
         brandVoiceId,
-        projectId
+        projectId,
+        action_type: actionType,
+        productId
       })
     })
 
@@ -116,7 +131,7 @@ export const ProductContent = (props: ProductContentProps) => {
             </SelectContent>
           </Select>
         </div>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={onSubmit as any}>
           <div>
             <label className='mb-4 block text-sm font-medium text-gray-700' htmlFor='product-attributes'>
               Generate copy-writing brief for new product *
@@ -147,10 +162,30 @@ export const ProductContent = (props: ProductContentProps) => {
             messages.map(val => {
               return <>{val.role === 'assistant' ? (
                 <>
-                  <Button disabled={isProgress} onClick={saveProduct}>{
-                    `${isProgress ? 'Saving product...' : 'Save content'}`
-                  }</Button>{'\n'}
-                  <br />
+                  <div className='flex flex-row mr-2'>
+                    <div>
+                      <Button disabled={isProgress} onClick={saveProduct}>{
+                        `${isProgress ? 'Saving product...' : 'Save content'}`
+                      }</Button>
+                    </div>
+                    <br />
+                    <div className='mx-4'>
+                      <Button onClick={() => {
+                        setMessages([])
+                      }}>
+                        Reset
+                      </Button>
+                    </div>
+                    <br />
+                    <div>
+                      <Button onClick={() => {
+                        return reload()
+                      }}>
+                        Redo message
+                      </Button>
+                    </div>
+                  </div>
+                  {'\n'}
                   <br />
                   <br />
                   {val.content}

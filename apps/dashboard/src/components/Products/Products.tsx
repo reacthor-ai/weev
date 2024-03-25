@@ -10,6 +10,7 @@ import { NAVIGATION } from '@/shared-utils/constant/navigation'
 import { ImageType, ProductType } from '@/database'
 import { useDeleteProductByIdAtom } from '@/store/products/deleteProductById'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 
 type ProductsProps = {
   productId: string
@@ -20,6 +21,8 @@ export const Products = (props: ProductsProps) => {
   const { products } = props
 
   const [{ mutate: deleteProductById }] = useDeleteProductByIdAtom()
+
+  const router = useRouter()
 
   return (
     <div className='grid grid-cols-3 gap-6'>
@@ -68,6 +71,10 @@ export const Products = (props: ProductsProps) => {
 
                         return deleteProductById({
                           productId: product.id
+                        }, {
+                          onSettled: () => {
+                            return router.refresh()
+                          }
                         })
                       }}>Yes, Delete</Button>
                     </div>

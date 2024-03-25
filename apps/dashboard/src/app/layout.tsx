@@ -1,10 +1,8 @@
 import type { Metadata } from 'next'
 import { ClerkProvider } from '@clerk/nextjs'
-import { Inter } from 'next/font/google'
 import './globals.css'
 import { ProviderInitializer } from '@/provider/ProviderInitilizer'
-
-const inter = Inter({ subsets: ['latin'] })
+import NextTopLoader from 'nextjs-toploader'
 
 export const metadata: Metadata = {
   title: 'WeeevAI'
@@ -15,7 +13,18 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <ProviderInitializer>
       <ClerkProvider>
         <html lang='en'>
-        <body className={inter.className}>{children}</body>
+        <body>
+        <NextTopLoader
+          color='#2299DD'
+          initialPosition={0.08}
+          crawlSpeed={200}
+          height={5}
+          crawl={true}
+          showSpinner={true}
+          easing='ease'
+        />
+        {children}
+        </body>
         </html>
       </ClerkProvider>
     </ProviderInitializer>

@@ -58,6 +58,7 @@ model BrandVoice {
 model Prompt {
   id           String      @id @default(cuid())
   type         PromptType
+  // prompt       String?     @db.LongText
   text         String      @db.LongText
   brandVoice   BrandVoice? @relation(fields: [brandVoiceId], references: [id])
   brandVoiceId String?

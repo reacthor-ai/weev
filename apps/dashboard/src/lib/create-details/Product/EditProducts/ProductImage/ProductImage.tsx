@@ -18,7 +18,8 @@ import { WEEEV_AI_API_URL } from '@/shared-utils/constant/constant-default'
 import {
   useListenImageGeneration
 } from '@/lib/create-details/Product/EditProducts/ProductImage/useListenImageGeneration'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { NAVIGATION } from '@/shared-utils/constant/navigation'
 
 type ProductImageProps = {
   organizationId: string
@@ -40,6 +41,7 @@ export const ProductImage = (props: ProductImageProps) => {
 
   const [inputImage, setInputImage] = useState<string | null>(null)
   const productInfo = useSearchParams()
+  const router = useRouter()
 
   const productId = productInfo.get('productId')
 
@@ -72,46 +74,41 @@ export const ProductImage = (props: ProductImageProps) => {
   const generateNewProductImage = useCallback(async () => {
     setIsLoading(true)
     if (skipImage) {
-      await generateImage()
+      return await generateImage()
     } else {
-      uploadFile().then(
-        async (fileUploadRes) => {
-          try {
-            if (!fileUploadRes?.url) return
-            setInputImage(fileUploadRes.gcpFileId)
+      try {
+        const fileUploadRes = await uploadFile()
 
-            const uploadProductImgResponse = await fetch(`${WEEEV_AI_API_URL}/product/upload-single-image`, {
-              method: 'POST',
-              body: JSON.stringify({
-                url: fileUploadRes.url
-              }),
-              headers: {
-                'User-Id': clerkId,
-                'Content-Type': 'application/json'
-              }
-            })
+        if (fileUploadRes) {
+          setInputImage(fileUploadRes.gcpFileId)
 
-            const { result: productImgUploadData, success }: {
-              result: string,
-              success: boolean
-            } = await uploadProductImgResponse.json()
-
-            if (success && productImgUploadData) {
-              await generateImage(productImgUploadData)
+          const uploadProductImgResponse = await fetch(`${WEEEV_AI_API_URL}/product/upload-single-image`, {
+            method: 'POST',
+            body: JSON.stringify({
+              url: fileUploadRes.url
+            }),
+            headers: {
+              'User-Id': clerkId,
+              'Content-Type': 'application/json'
             }
-          } catch (error) {
-            console.log(`Error uploading image`, error)
+          })
+
+          const { result: productImgUploadData, success }: {
+            result: string,
+            success: boolean
+          } = await uploadProductImgResponse.json()
+
+          if (success && productImgUploadData) {
+            return await generateImage(productImgUploadData)
           }
         }
-      )
-        .catch(() => setIsLoading(false))
-
+      } catch (error) {
+        setIsLoading(false)
+      }
     }
   }, [skipImage])
 
   const generateImage = async (productImgUploadData?: string) => {
-    if (prompts.length === 0) alert('Please fill out your prompt')
-
     const body = JSON.stringify({
       imageId: productImgUploadData,
       model: { id: modelList['PhotoReal'] },
@@ -126,15 +123,23 @@ export const ProductImage = (props: ProductImageProps) => {
       }
     })
 
-    const genProductImgResponse = await fetch('/dashboard/api/ai/generate-product-image', {
-      method: 'POST',
-      body
-    })
+    try {
+      const genProductImgResponse = await fetch('/dashboard/api/ai/generate-product-image', {
+        method: 'POST',
+        body,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
 
-    const generationId = await genProductImgResponse.json()
+      const generationId = await genProductImgResponse.json()
 
-    if (generationId) {
-      setGenerationId(generationId.result)
+      if (generationId) {
+        setGenerationId(generationId.result)
+      }
+    } catch (error) {
+      setIsLoading(false)
+      alert('Please try again')
     }
   }
 
@@ -147,51 +152,59 @@ export const ProductImage = (props: ProductImageProps) => {
 
     const blob = await response.blob()
 
-    uploadImgGCP(blob).then(async (gcp) => {
+    if (blob) {
       setLoadingUploadImage(true)
-      if (gcp) {
+      try {
+        const gcp = await uploadImgGCP(blob)
 
-        const body = JSON.stringify({
-          productId: productId,
-          projectId,
-          imageSettingsPrompt: [
-            {
-              text: `model_id: {${modelList['PhotoReal']}}`
-            },
-            {
-              text: `photoRealStrength: {${depthValue.value}}`
-            },
-            {
-              text: `presetStyle: {${preStyle}}`
-            },
-            {
-              text: `contrastRatio: {${imageStrength[0]}}`
-            },
-            {
-              text: `height {${dimensionsValue.value.height}}`
-            },
-            {
-              text: `width {${dimensionsValue.value.width}}`
-            },
-            {
-              text: `initStrength {${imageStrength[0]}}`
-            }
-          ],
-          generalInputImage: inputImage,
-          imagePrompt: prompts,
-          src: gcp.gcpFileId
-        })
-        const response = await fetch('/dashboard/api/update-product-image', {
-          method: 'post',
-          body
-        })
-        const data = await response.json()
+        if (gcp) {
+          const body = JSON.stringify({
+            productId: productId,
+            projectId,
+            imageSettingsPrompt: [
+              {
+                text: `model_id: {${modelList['PhotoReal']}}`
+              },
+              {
+                text: `photoRealStrength: {${depthValue.value}}`
+              },
+              {
+                text: `presetStyle: {${preStyle}}`
+              },
+              {
+                text: `contrastRatio: {${imageStrength[0]}}`
+              },
+              {
+                text: `height {${dimensionsValue.value.height}}`
+              },
+              {
+                text: `width {${dimensionsValue.value.width}}`
+              },
+              {
+                text: `initStrength {${imageStrength[0]}}`
+              }
+            ],
+            generalInputImage: inputImage,
+            imagePrompt: prompts,
+            src: gcp.gcpFileId
+          })
 
-        if (data.success) {
-          setLoadingUploadImage(false)
+          const response = await fetch('/dashboard/api/update-product-image', {
+            method: 'post',
+            body
+          })
+          const data = await response.json()
+
+          if (data.success) {
+            setLoadingUploadImage(false)
+            router.push(NAVIGATION.PROJECT_DETAILS)
+          }
         }
+      } catch (error) {
+        setIsLoading(false)
+        alert('Please try again')
       }
-    })
+    }
   }
 
   if (!productId) return null
@@ -217,6 +230,7 @@ export const ProductImage = (props: ProductImageProps) => {
                   onChange={(e) => setPrompts(e.target.value)}
                   className='h-[360px]'
                   placeholder='Write your imagery guidelines brief'
+                  value={prompts}
                 />
               </div>
             </div>
@@ -231,20 +245,26 @@ export const ProductImage = (props: ProductImageProps) => {
             {
               loadingUploadImage && (
                 <>
-                  <AlertCircleIcon className='h-4 w-4 text-white' />
-                  <AlertTitle>Heads up!</AlertTitle>
-                  <AlertDescription>
-                    Saving image...
-                  </AlertDescription>
                   <Alert className={'mb-3'}>
+                    <AlertCircleIcon className='h-4 w-4 text-white' />
+                    <AlertTitle>Heads up!</AlertTitle>
+                    <AlertDescription>
+                      Saving image don't exit out...
+                    </AlertDescription>
                   </Alert>
                   <br />
-
                 </>
               )
             }
             <div>
-              {image && <Button onClick={saveImage}>Save</Button>}
+              {
+                image && <Button
+                  disabled={loadingUploadImage}
+                  className='mt-4'
+                  onClick={saveImage}>
+                  {loadingUploadImage ? 'Saving...' : 'Save'}
+                </Button>
+              }
               {
                 isLoading ? (
                   <div className='bg-white rounded-lg shadow-md p-4 animate-pulse'>
@@ -354,33 +374,6 @@ export const ProductImage = (props: ProductImageProps) => {
                 {controlNetDetails[controlNetType]}
               </AlertDescription>
             </Alert>
-
-            {/*<div className='mb-6'>*/}
-            {/*  <label className='block mb-2 text-sm font-medium text-gray-700'>*/}
-            {/*    Tweak your image **/}
-            {/*  </label>*/}
-            {/*  <Select onValueChange={setControlNetType}>*/}
-            {/*    <SelectTrigger>*/}
-            {/*      <SelectValue placeholder='Tweek your images setting' />*/}
-            {/*    </SelectTrigger>*/}
-            {/*    <SelectContent>*/}
-            {/*      <SelectGroup>*/}
-            {/*        {*/}
-            {/*          CONTROL_NET_SELECT.map(controlNet => {*/}
-            {/*            return (*/}
-            {/*              <SelectItem*/}
-            {/*                key={controlNet}*/}
-            {/*                value={controlNet}*/}
-            {/*              >*/}
-            {/*                {controlNet}*/}
-            {/*              </SelectItem>*/}
-            {/*            )*/}
-            {/*          })*/}
-            {/*        }*/}
-            {/*      </SelectGroup>*/}
-            {/*    </SelectContent>*/}
-            {/*  </Select>*/}
-            {/*</div>*/}
 
             <div className='mb-6'>
               <label className='block mb-2 text-sm font-medium text-gray-700'>

@@ -129,3 +129,52 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
     }
   })
 }
+
+type UpdateProductParams = {
+  prompt: {
+    text: string
+  }
+
+  productId: string
+  projectId: string
+  brandVoiceId: string
+  title: string
+  description: string
+}
+
+export const updateProduct = async (params: UpdateProductParams) => {
+  const {
+    productId,
+    projectId,
+    prompt: {
+      text
+    },
+    title,
+    description,
+    brandVoiceId
+  } = params
+
+  return await prisma.product.update({
+    where: {
+      id: productId,
+      projectId
+    },
+
+    data: {
+      title,
+      description,
+      brandVoiceId,
+      status: 'DONE',
+      prompt: {
+        createMany: {
+          data: [
+            {
+              text, // text prompt
+              type: 'PRODUCT_TEXT'
+            }
+          ]
+        }
+      }
+    }
+  })
+}

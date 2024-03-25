@@ -69,11 +69,11 @@ export function KnowledgeHub(props: KnowledgeHubProps) {
               </fieldset>
             </form>
           </div>
-          <div className='relative flex overflow-auto h-screen flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2'>
+          <div className='relative flex h-[70%] flex-col rounded-xl bg-muted/50 p-4 lg:col-span-2'>
             <Badge variant='outline' className='absolute right-3 top-3'>
               Output
             </Badge>
-            <div className='flex-1'>
+            <div className='flex-1 overflow-auto'>
               <p className='text-gray-800'>
                 {
                   messages.map(message => {
@@ -92,7 +92,7 @@ export function KnowledgeHub(props: KnowledgeHubProps) {
             </div>
             <form
               onSubmit={handleSubmit}
-              className='relative overflow-hidden rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring'>
+              className='relative overflow-hidden mt-5 rounded-lg border bg-background focus-within:ring-1 focus-within:ring-ring'>
               <Label htmlFor='message' className='sr-only'>
                 Message
               </Label>

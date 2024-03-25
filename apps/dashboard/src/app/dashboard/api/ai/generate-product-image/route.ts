@@ -2,6 +2,8 @@ import { imageModelSdk } from '@/api-utils/leonardo'
 import { modelList } from '@/api-utils/leonardo/constant'
 
 export async function POST(req: Request) {
+  const params = await req.json()
+
   const {
     imageId,
     model: { id },
@@ -14,17 +16,13 @@ export async function POST(req: Request) {
       prompt,
       initStrength
     }
-  } = await req.json()
+  } = params
 
   if (modelList['PhotoReal'] === id) {
     try {
-      const uploadedImageSettings = {
-        initImageId: imageId,
-        initStrength
-      }
-
       const result = await imageModelSdk.generation.createGeneration({
-        ...(imageId && { ...uploadedImageSettings }),
+        initImageId: imageId ?? undefined,
+        initStrength: imageId ? initStrength : undefined,
         photoReal: true,
         public: false,
         photoRealStrength,

@@ -2,7 +2,7 @@ import { z } from 'zod'
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { mistralAI } from '@/api-utils/models'
 import { StructuredOutputParser } from '@langchain/core/output_parsers'
-import { createProduct } from '@/database/products/products'
+import { createProduct, updateProduct } from '@/database/products/products'
 
 const zodSchema = z.object({
   'productName': z.string(),
@@ -10,7 +10,8 @@ const zodSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const { output, projectId, brandVoiceId } = await req.json()
+  const { output, projectId, brandVoiceId, action_type = 'create-product', productId } = await req.json()
+
   const content = output.replace(/[^a-zA-Z0-9]/g, ' ')
 
   const parser = StructuredOutputParser.fromZodSchema(zodSchema)
@@ -39,17 +40,34 @@ export async function POST(req: Request) {
     }, { status: 404 })
   }
 
-  const product = await createProduct({
-    description: answer.productDescription,
-    title: answer.productName,
-    projectId,
-    brandVoiceId,
-    prompt: { text: output }
-  })
+  if (action_type === 'create-product' && !productId) {
+    const product = await createProduct({
+      description: answer.productDescription,
+      title: answer.productName,
+      projectId,
+      brandVoiceId,
+      prompt: { text: output }
+    })
 
-  return Response.json({
-    success: true,
-    result: product,
-    error: null
-  }, { status: 200 })
+    return Response.json({
+      success: true,
+      result: product,
+      error: null
+    }, { status: 200 })
+  } else if (action_type === 'update-product' && productId) {
+    const product = await updateProduct({
+      description: answer.productDescription,
+      title: answer.productName,
+      projectId,
+      brandVoiceId,
+      prompt: { text: output },
+      productId
+    })
+
+    return Response.json({
+      success: true,
+      result: product,
+      error: null
+    }, { status: 200 })
+  }
 }

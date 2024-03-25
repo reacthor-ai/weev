@@ -32,6 +32,8 @@ export default async function DashboardCreateProducts(props) {
               clerkId={user.clerkId}
               projectId={props.params.id}
               brandVoices={brandVoices}
+              productId={null}
+              actionType='create-product'
             />
 
             <div className='mt-[8rem]' />
