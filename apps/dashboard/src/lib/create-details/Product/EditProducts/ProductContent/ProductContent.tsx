@@ -52,7 +52,8 @@ export const ProductContent = (props: ProductContentProps) => {
     api: '/dashboard/api/ai/retrieve-brand-voice',
     body: {
       brandVoiceId,
-      type_of_completion: 'generate-product'
+      type_of_completion: 'generate-product',
+      brandVoices
     }
   })
 
@@ -75,7 +76,8 @@ export const ProductContent = (props: ProductContentProps) => {
         brandVoiceId,
         projectId,
         action_type: actionType,
-        productId
+        productId,
+        inputPrompt: messages[messages.length - 1].content
       })
     })
 

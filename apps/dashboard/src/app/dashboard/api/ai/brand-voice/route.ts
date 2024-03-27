@@ -1,9 +1,9 @@
-import { TogetherAIEmbeddings } from '@langchain/community/embeddings/togetherai'
 import { RecursiveCharacterTextSplitter } from 'langchain/text_splitter'
 import { PineconeStore } from '@langchain/pinecone'
 import { TextLoader } from 'langchain/document_loaders/fs/text'
 import { pinecone } from '@/api-utils/pinecone'
 import { Document } from 'langchain/document'
+import { togetherAIEmbeddings } from '@/api-utils/models'
 
 const processFile = async (url: string) => {
   try {
@@ -33,13 +33,9 @@ const processEmbeddings = async (rawDocs, namespace: string) => {
       new Document({ pageContent: `Document namespace: ${namespace}`, metadata: { namespace } })
     ]
 
-    const embeddings = new TogetherAIEmbeddings({
-      apiKey: process.env.TOGETHER_AI_API_KEY,
-      modelName: 'togethercomputer/m2-bert-80M-8k-retrieval'
-    })
     const index = pinecone.Index(process.env.PINECONE_INDEX_NAME ?? '')
 
-    await PineconeStore.fromDocuments(newDocs, embeddings, {
+    await PineconeStore.fromDocuments(newDocs, togetherAIEmbeddings, {
       pineconeIndex: index,
       namespace,
       textKey: 'text'

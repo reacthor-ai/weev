@@ -10,7 +10,7 @@ const zodSchema = z.object({
 })
 
 export async function POST(req: Request) {
-  const { output, projectId, brandVoiceId, action_type = 'create-product', productId } = await req.json()
+  const { output, projectId, brandVoiceId, action_type = 'create-product', productId, inputPrompt } = await req.json()
 
   const content = output.replace(/[^a-zA-Z0-9]/g, ' ')
 
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       title: answer.productName,
       projectId,
       brandVoiceId,
-      prompt: { text: output }
+      prompt: { text: output, prompt: inputPrompt }
     })
 
     return Response.json({
@@ -60,7 +60,7 @@ export async function POST(req: Request) {
       title: answer.productName,
       projectId,
       brandVoiceId,
-      prompt: { text: output },
+      prompt: { text: output, prompt: inputPrompt },
       productId
     })
 

@@ -77,8 +77,13 @@ export const useProductImageControllers = (props: UseProductImageControllersProp
         const url = await ee.json()
         const productImage = { gcpFileId: `${params.name}-${params.fileId}`, url: url?.response }
         return productImage
+      } else {
+        const error = { gcpFileId: `${params.name}-${params.fileId}`, url: null }
+        return error
       }
     }
+
+    return { gcpFileId: `${params.name}-${params.fileId}`, url: null }
   }
 
   const uploadImgGCP = async (fileBlob: Blob) => {  // fileBlob is either a File or Blob object
@@ -111,7 +116,12 @@ export const useProductImageControllers = (props: UseProductImageControllersProp
         const url = await ee.json()
         const productImage = { gcpFileId: `${params.name}-${params.fileId}`, url: url?.response }
         return productImage
+      } else {
+        const error = { gcpFileId: `${params.name}-${params.fileId}`, url: null }
+        return error
       }
+    } else {
+      return { gcpFileId: `${params.name}-${params.fileId}`, url: null }
     }
   }
 

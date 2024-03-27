@@ -1,7 +1,7 @@
 import { PageHeader } from '@/components/PageHeader'
-import { BrandIdentityCreateDetails } from '@/lib/create-details/BrandIdentity'
 import { getUser } from '@/database/user'
 import { Suspense } from 'react'
+import { Brand } from '@/lib/create-details/Brand'
 
 export default async function DashboardCreateBrandVoice() {
   const userInfo = await getUser()
@@ -15,8 +15,8 @@ export default async function DashboardCreateBrandVoice() {
         enableBackBtn
       >
         <Suspense fallback={'Loading...'}>
-          <div className='mt-8'>
-            <BrandIdentityCreateDetails
+          <div className='min-w-full mt-8'>
+            <Brand
               organizationId={userInfo.organization[0].id}
               id={userInfo.id}
               clerkId={userInfo.clerkId}

@@ -18,7 +18,7 @@ export const ProjectCreateDetails = (props: ProjectCreateDetailsProps) => {
   const [title, setTitle] = useState<string>('')
   const [description, setDescription] = useState<string>('')
 
-  const [{ mutate: mutateProjects }] = useCreateProjectsAtom()
+  const [{ mutate: mutateProjects, isPending }] = useCreateProjectsAtom()
   const router = useRouter()
 
   const isDisabled = title.length === 0 || description.length === 0
@@ -74,11 +74,11 @@ export const ProjectCreateDetails = (props: ProjectCreateDetailsProps) => {
               </div>
             </div>
             <Button
-              disabled={isDisabled}
-              onClick={() => createProjects()}
+              disabled={isDisabled || isPending}
+              onClick={createProjects}
               className='bg-blue-600 text-white w-full'
             >
-              Create projects
+              {isPending ? 'Creating a project please wait...' : 'Create projects'}
             </Button>
           </div>
         </div>

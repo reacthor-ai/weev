@@ -1,0 +1,1 @@
+export { SearchBrandVoice } from './SearchBrandVoice'

@@ -14,7 +14,6 @@ import { DEFAULT_IMAGE_STRENGTH, DEPTH_OF_FIELD, PRE_STYLE } from '@/lib/create-
 import { useProductImageControllers } from '@/lib/create-details/Product/hooks'
 import { modelList } from '@/api-utils/leonardo/constant'
 import { Checkbox } from '@/components/ui/checkbox'
-import { WEEEV_AI_API_URL } from '@/shared-utils/constant/constant-default'
 import {
   useListenImageGeneration
 } from '@/lib/create-details/Product/EditProducts/ProductImage/useListenImageGeneration'
@@ -33,11 +32,11 @@ export const ProductImage = (props: ProductImageProps) => {
   const [files, setFiles] = useState<File[]>([])
   const [prompts, setPrompts] = useState('')
   const [generationId, setGenerationId] = useState<string | null>(null)
-  const [skipImage, setSkipImage] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const { messages } = useListenImageGeneration({ setIsLoading })
-
   const [loadingUploadImage, setLoadingUploadImage] = useState(false)
+
+  const skipImage = true
 
   const [inputImage, setInputImage] = useState<string | null>(null)
   const productInfo = useSearchParams()
@@ -76,57 +75,28 @@ export const ProductImage = (props: ProductImageProps) => {
     if (skipImage) {
       return await generateImage()
     } else {
-      try {
-        const fileUploadRes = await uploadFile()
-
-        if (fileUploadRes) {
-          setInputImage(fileUploadRes.gcpFileId)
-
-          const uploadProductImgResponse = await fetch(`${WEEEV_AI_API_URL}/product/upload-single-image`, {
-            method: 'POST',
-            body: JSON.stringify({
-              url: fileUploadRes.url
-            }),
-            headers: {
-              'User-Id': clerkId,
-              'Content-Type': 'application/json'
-            }
-          })
-
-          const { result: productImgUploadData, success }: {
-            result: string,
-            success: boolean
-          } = await uploadProductImgResponse.json()
-
-          if (success && productImgUploadData) {
-            return await generateImage(productImgUploadData)
-          }
-        }
-      } catch (error) {
-        setIsLoading(false)
-      }
+      return await generateImage()
     }
-  }, [skipImage])
+  }, [skipImage, prompts])
 
   const generateImage = async (productImgUploadData?: string) => {
-    const body = JSON.stringify({
-      imageId: productImgUploadData,
-      model: { id: modelList['PhotoReal'] },
-      options: {
-        photoRealStrength: depthValue.value,
-        presetStyle: preStyle,
-        contrastRatio: imageStrength[0],
-        height: dimensionsValue.value.height,
-        width: dimensionsValue.value.width,
-        prompt: prompts,
-        initStrength: imageStrength[0]
-      }
-    })
-
+    setIsLoading(true)
     try {
       const genProductImgResponse = await fetch('/dashboard/api/ai/generate-product-image', {
         method: 'POST',
-        body,
+        body: JSON.stringify({
+          imageId: productImgUploadData,
+          model: { id: modelList['PhotoReal'] },
+          options: {
+            photoRealStrength: depthValue.value,
+            presetStyle: preStyle,
+            contrastRatio: imageStrength[0],
+            height: dimensionsValue.value.height,
+            width: dimensionsValue.value.width,
+            prompt: prompts,
+            initStrength: imageStrength[0]
+          }
+        }),
         headers: {
           'Content-Type': 'application/json'
         }
@@ -136,6 +106,7 @@ export const ProductImage = (props: ProductImageProps) => {
 
       if (generationId) {
         setGenerationId(generationId.result)
+        setIsLoading(false)
       }
     } catch (error) {
       setIsLoading(false)
@@ -157,7 +128,7 @@ export const ProductImage = (props: ProductImageProps) => {
       try {
         const gcp = await uploadImgGCP(blob)
 
-        if (gcp) {
+        if (gcp?.url) {
           const body = JSON.stringify({
             productId: productId,
             projectId,
@@ -197,7 +168,7 @@ export const ProductImage = (props: ProductImageProps) => {
 
           if (data.success) {
             setLoadingUploadImage(false)
-            router.push(NAVIGATION.PROJECT_DETAILS)
+            router.push(`${NAVIGATION.PROJECT_DETAILS}/${projectId}`)
           }
         }
       } catch (error) {
@@ -234,7 +205,7 @@ export const ProductImage = (props: ProductImageProps) => {
                 />
               </div>
             </div>
-            <Button disabled={isLoading || prompts.length === 0} onClick={generateNewProductImage}
+            <Button disabled={isLoading || prompts.length === 0} onClick={() => generateImage()}
                     className='bg-blue-600 text-white w-full'>
               {isLoading ? 'Generating Image...' : 'Generate Image'}
             </Button>
@@ -290,12 +261,12 @@ export const ProductImage = (props: ProductImageProps) => {
 
             <div>
               <div className='flex items-center space-x-2 mb-4'>
-                <Checkbox onCheckedChange={(e) => setSkipImage(e as boolean)} checked={skipImage} id='terms' />
+                <Checkbox disabled={skipImage} checked={skipImage} id='terms' />
                 <label
                   htmlFor='terms'
                   className='text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70'
                 >
-                  Remove uploading file.
+                  Remove uploading file. (Coming soon)
                 </label>
               </div>
               <h2 className='text-xl font-semibold'>Image Settings</h2>

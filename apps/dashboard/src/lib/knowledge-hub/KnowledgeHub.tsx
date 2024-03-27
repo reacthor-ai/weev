@@ -23,7 +23,8 @@ export function KnowledgeHub(props: KnowledgeHubProps) {
     api: '/dashboard/api/ai/retrieve-brand-voice',
     body: {
       brandVoiceId,
-      type_of_completion: 'general'
+      type_of_completion: 'general',
+      brandVoices
     }
   })
 

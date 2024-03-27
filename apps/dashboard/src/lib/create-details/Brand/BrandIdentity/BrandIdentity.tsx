@@ -2,7 +2,7 @@
 
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { UploadFiles } from '../Upload'
+import { UploadFiles } from '../../Upload'
 import { Input } from '@/components/ui/input'
 import { useState } from 'react'
 import { useCreateBrandVoiceAtom } from '@/store/brand-voice/brand-voice'
@@ -11,16 +11,11 @@ import { pdfToText } from 'pdf-ts'
 import { uuid } from 'uuidv4'
 import { BRAND_VOICE_PREFIX } from '@/shared-utils/constant/constant-default'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
+import { BrandProps } from '../Brand'
 
 const FILES_ALLOWED = ['.pdf', '.txt']
 
-type BrandIdentityCreateDetailsProps = {
-  organizationId: string
-  id: string
-  clerkId: string
-}
-
-export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProps) => {
+export const BrandIdentityCreateDetails = (props: BrandProps) => {
   const { organizationId, id: userId, clerkId } = props
   const [loading, setLoading] = useState<boolean>(false)
   const router = useRouter()
@@ -99,6 +94,8 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
   }
 
   const uploadBrandFile = async () => {
+    setLoading(true)
+
     if (files.length === 0) {
       alert('Please select files first.')
       return ''
@@ -188,9 +185,9 @@ export const BrandIdentityCreateDetails = (props: BrandIdentityCreateDetailsProp
                 />
               </div>
               <Button
-                disabled={isDisabled() || files.length === 0}
+                disabled={isDisabled() || files.length === 0 || loading}
                 className='bg-blue-600 text-white w-full' onClick={uploadBrandFile}>
-                {loading ? 'Loading content...' : 'Generated Content'}
+                {loading ? 'Generating content this might take a minute...' : 'Generated Content'}
               </Button>
             </div>
           </div>

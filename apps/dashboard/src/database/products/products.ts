@@ -30,6 +30,7 @@ export const getProductById = async (params: GetProductId) => {
 type CreateProductParams = {
   prompt: {
     text: string
+    prompt: string
   }
 
   brandVoiceId: string
@@ -40,7 +41,7 @@ type CreateProductParams = {
 
 export const createProduct = async (params: CreateProductParams) => {
   const {
-    prompt: { text },
+    prompt: { text, prompt },
     description,
     projectId,
     brandVoiceId,
@@ -59,7 +60,8 @@ export const createProduct = async (params: CreateProductParams) => {
           data: [
             {
               text, // text prompt
-              type: 'PRODUCT_TEXT'
+              type: 'PRODUCT_TEXT',
+              prompt
             }
           ]
         }
@@ -83,6 +85,7 @@ type UpdateProductWithImage = {
 type PromptImageType = {
   text: string
   type: 'PRODUCT_IMAGE'
+  prompt: string
 }
 
 export const updateProductWithImage = async (params: UpdateProductWithImage) => {
@@ -90,8 +93,22 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
 
   const imagePrompts: PromptImageType[] = imageSettingsPrompt.map(va => ({
     text: va.text,
-    type: 'PRODUCT_IMAGE'
+    type: 'PRODUCT_IMAGE',
+    prompt: `Settings for prompt: ${imagePrompt}`
   }))
+
+  const promptInputImage: PromptImageType[] = [
+    {
+      text: src,
+      type: 'PRODUCT_IMAGE',
+      prompt: imagePrompt
+    },
+    {
+      prompt: 'Prompt input image',
+      text: generalInputImage ?? 'No input image',
+      type: 'PRODUCT_IMAGE'
+    }
+  ]
 
   return await prisma.product.update({
     where: {
@@ -100,20 +117,6 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
     },
     data: {
       status: 'DONE',
-      prompt: {
-        createMany: {
-          data: [
-            {
-              text: imagePrompt,
-              type: 'PRODUCT_TEXT'
-            },
-            {
-              text: generalInputImage ?? 'No input image',
-              type: 'PRODUCT_IMAGE'
-            }
-          ]
-        }
-      },
       image: {
         create: {
           default: true,
@@ -121,7 +124,7 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
           type: 'GENERAL_IMAGE',
           prompt: {
             createMany: {
-              data: [...imagePrompts]
+              data: [...imagePrompts, ...promptInputImage]
             }
           }
         }
@@ -133,6 +136,7 @@ export const updateProductWithImage = async (params: UpdateProductWithImage) => 
 type UpdateProductParams = {
   prompt: {
     text: string
+    prompt: string
   }
 
   productId: string
@@ -147,7 +151,8 @@ export const updateProduct = async (params: UpdateProductParams) => {
     productId,
     projectId,
     prompt: {
-      text
+      text,
+      prompt
     },
     title,
     description,
@@ -169,6 +174,7 @@ export const updateProduct = async (params: UpdateProductParams) => {
         createMany: {
           data: [
             {
+              prompt,
               text, // text prompt
               type: 'PRODUCT_TEXT'
             }

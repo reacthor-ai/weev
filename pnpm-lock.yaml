@@ -60,6 +60,9 @@ importers:
       '@langchain/mistralai':
         specifier: ^0.0.14
         version: 0.0.14
+      '@langchain/openai':
+        specifier: ^0.0.23
+        version: 0.0.23
       '@langchain/pinecone':
         specifier: ^0.0.3
         version: 0.0.3
@@ -2627,7 +2630,7 @@ packages:
         optional: true
     dependencies:
       '@langchain/core': 0.1.46
-      '@langchain/openai': 0.0.20
+      '@langchain/openai': 0.0.23
       '@pinecone-database/pinecone': 2.1.0
       flat: 5.0.2
       langsmith: 0.1.13
@@ -2690,8 +2693,8 @@ packages:
       - encoding
     dev: false
 
-  /@langchain/openai@0.0.20:
-    resolution: {integrity: sha512-EQ49+xi7PZYcglSbl85HGW6U01/cMIsGIhFVRgRdSkIoLJf/qduupphhs1h1xauPG0uuwHDcqYaXjzeQ5sRDFA==}
+  /@langchain/openai@0.0.23:
+    resolution: {integrity: sha512-H5yv2hKQ5JVa6jC1wQxiN2299lJbPc5JUv93c6IUw+0jr0kFqH48NWbcythz1UFj2rOpZdaFJSYJs2nr9bhVLg==}
     engines: {node: '>=18'}
     dependencies:
       '@langchain/core': 0.1.46
@@ -10499,7 +10502,7 @@ packages:
       '@google-cloud/storage': 7.7.0
       '@langchain/community': 0.0.40(@pinecone-database/pinecone@2.1.0)
       '@langchain/core': 0.1.46
-      '@langchain/openai': 0.0.20
+      '@langchain/openai': 0.0.23
       '@pinecone-database/pinecone': 2.1.0
       binary-extensions: 2.2.0
       expr-eval: 2.0.2
