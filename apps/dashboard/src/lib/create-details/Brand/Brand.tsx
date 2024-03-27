@@ -2,7 +2,6 @@
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { BrandIdentityCreateDetails } from '@/lib/create-details/Brand/BrandIdentity'
-import { SearchBrandVoice } from '@/lib/create-details/Brand/SearchBrandVoice'
 
 export type BrandProps = {
   organizationId: string
@@ -22,7 +21,7 @@ export const Brand = (props: BrandProps) => {
         <BrandIdentityCreateDetails organizationId={organizationId} id={id} clerkId={clerkId} />
       </TabsContent>
       <TabsContent value='search-brand-voice'>
-        <SearchBrandVoice organizationId={organizationId} id={id} clerkId={clerkId} />
+        <p>Coming Soon</p>
       </TabsContent>
     </Tabs>
   )
