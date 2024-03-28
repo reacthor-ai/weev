@@ -28,10 +28,11 @@ type ProductImageProps = {
 }
 
 export const ProductImage = (props: ProductImageProps) => {
-  const { organizationId, userId, clerkId, projectId } = props
+  const { organizationId, userId, projectId } = props
   const [files, setFiles] = useState<File[]>([])
   const [prompts, setPrompts] = useState('')
   const [generationId, setGenerationId] = useState<string | null>(null)
+
   const [isLoading, setIsLoading] = useState(false)
   const { messages } = useListenImageGeneration({ setIsLoading })
   const [loadingUploadImage, setLoadingUploadImage] = useState(false)
@@ -106,10 +107,8 @@ export const ProductImage = (props: ProductImageProps) => {
 
       if (generationId) {
         setGenerationId(generationId.result)
-        setIsLoading(false)
       }
     } catch (error) {
-      setIsLoading(false)
       alert('Please try again')
     }
   }
