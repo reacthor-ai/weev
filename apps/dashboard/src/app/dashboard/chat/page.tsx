@@ -1,4 +1,3 @@
-import { PageHeader } from '@/components/PageHeader'
 import { KnowledgeHub } from '@/lib/knowledge-hub/KnowledgeHub'
 import { getBrandVoicesByOrgId } from '@/database/brand'
 import { redirect } from 'next/navigation'
@@ -14,18 +13,9 @@ export default async function DashboardChat() {
 
   return (
     <>
-      <PageHeader
-        title={'Knowledge Hub'}
-        subTitle={''}
-        content={''}
-      >
-        <Suspense fallback={'Loading...'}>
-          <div className='min-h-screen my-8'>
-            <KnowledgeHub brandVoices={brandVoices} />
-          </div>
-        </Suspense>
-        <div className='mt-[8rem]' />
-      </PageHeader>
+      <Suspense fallback={'Loading...'}>
+        <KnowledgeHub brandVoices={brandVoices} />
+      </Suspense>
     </>
   )
 }

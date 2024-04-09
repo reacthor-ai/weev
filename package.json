@@ -1,5 +1,5 @@
 {
-  "name": "weev",
+  "name": "reacthor",
   "private": true,
   "scripts": {
     "build": "turbo build",

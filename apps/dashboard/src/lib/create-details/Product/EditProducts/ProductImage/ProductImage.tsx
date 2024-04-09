@@ -25,10 +25,11 @@ type ProductImageProps = {
   userId: string
   projectId: string
   clerkId: string
+  productId?: string
 }
 
 export const ProductImage = (props: ProductImageProps) => {
-  const { organizationId, userId, projectId } = props
+  const { organizationId, userId, projectId, productId: editProductId } = props
   const [files, setFiles] = useState<File[]>([])
   const [prompts, setPrompts] = useState('')
   const [generationId, setGenerationId] = useState<string | null>(null)
@@ -43,7 +44,7 @@ export const ProductImage = (props: ProductImageProps) => {
   const productInfo = useSearchParams()
   const router = useRouter()
 
-  const productId = productInfo.get('productId')
+  const productId = productInfo.get('productId') ?? editProductId
 
   const image = useMemo(() => {
     if (!messages) return null

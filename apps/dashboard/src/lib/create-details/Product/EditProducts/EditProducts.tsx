@@ -37,6 +37,7 @@ export const EditProducts = (props: EditProductsProps) => {
           clerkId={clerkId}
           userId={userId}
           projectId={product?.projectId ?? ''}
+          productId={product.id}
           organizationId={organizationId}
         />
       </div>

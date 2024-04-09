@@ -1,7 +1,7 @@
 import { ChatPromptTemplate } from '@langchain/core/prompts'
 import { BrandVoiceType } from '@/database'
 
-type CompletionType = 'generate-brand-voice' | 'generate-product' | 'general'
+type CompletionType = 'generate-brand-voice' | 'generate-product' | 'general' | 'knowledge-prompt'
 
 export const convertTypeCompletionPrompt = (type_of_completion: CompletionType, brandVoices?: BrandVoiceType) => {
   const text = brandVoices ? `
@@ -10,6 +10,12 @@ export const convertTypeCompletionPrompt = (type_of_completion: CompletionType, 
     - ${brandVoices?.type}
     - ${brandVoices?.title}
   ` : ''
+
+  const knowledgePrompt = `Based on the following, provide a concise answer to the question.
+Chat History: {chat_history} 
+- (Include only the 2-3 most relevant previous exchanges)
+
+Question: {question}`
 
   const generalPrompt = ChatPromptTemplate.fromTemplate(`Answer the question in a simple sentence based only on the following context:
     {context} ${text}
@@ -67,7 +73,8 @@ export const convertTypeCompletionPrompt = (type_of_completion: CompletionType, 
   const product = {
     'generate-product': generateProduct,
     'general': generalPrompt,
-    'generate-brand-voice': generateBrandVoice
+    'generate-brand-voice': generateBrandVoice,
+    'knowledge-prompt': knowledgePrompt
   } satisfies Record<CompletionType, unknown>
 
   return product[type_of_completion]

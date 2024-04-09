@@ -5,6 +5,7 @@ import { BytesOutputParser } from '@langchain/core/output_parsers'
 import { StreamingTextResponse } from 'ai'
 import { mistralAI } from '@/api-utils/models'
 import { convertTypeCompletionPrompt } from '@/api-utils/models/prompt-template'
+import { ChatPromptTemplate } from '@langchain/core/prompts'
 
 export async function POST(req: Request) {
   const { brandVoiceId, messages, type_of_completion, brandVoices } = await req.json()
@@ -21,7 +22,7 @@ export async function POST(req: Request) {
       context: retriever.pipe(formatDocumentsAsString),
       question: new RunnablePassthrough()
     },
-    prompt,
+    (prompt as ChatPromptTemplate),
     mistralAI,
     new BytesOutputParser()
   ])
