@@ -1,0 +1,81 @@
+datasource db {
+  provider     = "mysql"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum DataType {
+  LINE
+  WHATSAPP
+  DOCUMENT
+}
+
+enum FileType {
+  RAG
+  FINE_TUNE
+}
+
+enum MessagingRole {
+  System
+  User
+  Assistant
+}
+
+model User {
+  id             String       @id @default(cuid())
+  name           String
+  clerkId        String       @unique
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  organizationId String
+}
+
+model Organization {
+  id        String      @id @default(cuid())
+  title     String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  storage   Datastore[]
+  users     User[]
+}
+
+model Datastore {
+  id        String    @id @default(cuid())
+  title     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  category  String?
+  fileType  FileType?
+  dataType  DataType?
+
+  // ETL system that transform the data, once it's uploaded.
+  masterBucketId String?
+  gcpBucket      GcpBucketStore[]
+  messaging      Messaging[]
+  organization   Organization?    @relation(fields: [organizationId], references: [id])
+  organizationId String?
+}
+
+model Messaging {
+  id          String        @id @default(cuid())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  role        MessagingRole
+  content     String        @db.LongText
+  datastore   Datastore?    @relation(fields: [datastoreId], references: [id])
+  datastoreId String?
+}
+
+model GcpBucketStore {
+  id          String     @id @default(cuid())
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bucketId    String     @unique
+  datastore   Datastore? @relation(fields: [datastoreId], references: [id])
+  datastoreId String?
+}

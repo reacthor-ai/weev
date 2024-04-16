@@ -1,0 +1,27 @@
+export const NAVIGATION = {
+  HOME: '/',
+  PROJECTS: '/dashboard/projects',
+  SETTINGS: '/dashboard/settings',
+  DATA_STORE: {
+    HOME: '/dashboard/dataset',
+    LIST: '/dashboard/dataset/{id}/list'
+  },
+  FINE_TUNE: '/dashboard/fine-tune',
+} as const satisfies Record<string, string | Record<string, string>>
+
+export const REACTHOR_API_ROUTES = {
+  CREATE_USER: '/dashboard/api/create-user',
+  CREATE_DATA_SET: '/dashboard/api/create-dataset',
+  GET_DATA_SETS: '/dashboard/api/get-dataset',
+  CREATE_GCP_STORE_RAG: '/dashboard/api/create-gcp-store',
+  UPDATE_MESSAGE_BY_ID: '/dashboard/api/update-message-by-id',
+  DELETE_MESSAGE_BY_ID: '/dashboard/api/delete-message-by-id',
+  GCP: {
+    STORAGE: {
+      UPLOAD_FILE: '/dashboard/api/gcp/storage/upload-many-files',
+    },
+    FUNCTION: {
+      TRIGGER: '/dashboard/api/gcp/functions/trigger-merge-csv'
+    }
+  }
+} as const satisfies Record<string, string | Record<string, unknown>>

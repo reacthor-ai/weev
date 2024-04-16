@@ -42,8 +42,8 @@ export const UploadFiles = (props: UploadFilesProps) => {
         type='file'
         ref={fileInputRef}
         onChange={handleFileChange}
-        accept={filesAllowed.join(',')}
         multiple
+        accept={filesAllowed.join(',')}
         style={{ display: 'none' }}
       />
 
