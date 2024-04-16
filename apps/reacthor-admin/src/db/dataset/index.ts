@@ -53,6 +53,10 @@ export const createDataset = async (params: CreateDatasetParams) => {
     }
 }
 
+export type ReturnGetListDataset = ReacthorDatastoreType & {
+  gcpBucket: ReacthorGcpBucketStoreType[]
+}
+
 export const listDataset = async () => {
     try {
       const user = await getUser()
@@ -71,14 +75,14 @@ export const listDataset = async () => {
           success: true,
           data: result,
           error: null
-        } as ReturnApi<any>)
+        })
       }
 
       return Response.json({
         success: false,
         data: null,
         error: 'NO USER'
-      } as ReturnApi<any>)
+      })
     } catch (error) {
       return Response.json({
         success: true,
