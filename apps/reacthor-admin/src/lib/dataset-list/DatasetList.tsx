@@ -50,7 +50,7 @@ export const DatasetList = (props: DatasetListProps) => {
             description="Annotate your data, to guide your model."
           />
 
-          <DatasetTable data={messaging} columns={columns} />
+          <DatasetTable data={messaging as any} columns={columns} />
         </>
       )}
       <div style={{ marginBottom: '3rem' }} />
