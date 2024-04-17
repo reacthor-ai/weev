@@ -1,50 +1,50 @@
 'use client'
 
-import { useEffect } from 'react';
+import { useEffect } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
   DoubleArrowLeftIcon,
   DoubleArrowRightIcon
-} from '@radix-ui/react-icons';
-import { Table } from '@tanstack/react-table';
+} from '@radix-ui/react-icons'
+import { Table } from '@tanstack/react-table'
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue
-} from '@/components/ui/select';
-import { Button } from '@/components/ui/button';
+} from '@/components/ui/select'
+import { Button } from '@/components/ui/button'
 
 interface DataTablePaginationProps<TData> {
-  table: Table<TData>;
+  table: Table<TData>
 }
 
 export function Pagination<TData>({ table }: DataTablePaginationProps<TData>) {
-  const router = useRouter();
+  const router = useRouter()
   const params = useSearchParams()
   const pathname = usePathname()
 
   // Read state from URL or use default
-  const pageIndex = params.get('page');
-  const pageSize = 10;
+  const pageIndex = parseInt(params.get('page') ?? '0') ?? 0
+  const pageSize = 10
 
   useEffect(() => {
     // Update the table state when URL changes
-    table.setPageIndex(pageIndex);
-    table.setPageSize(pageSize);
-  }, [pageIndex, pageSize, table]);
+    table.setPageIndex(pageIndex)
+    table.setPageSize(pageSize)
+  }, [pageIndex, pageSize, table])
 
   const handlePageSizeChange = (value: string) => {
-    const newSize = Number(value);
+    const newSize = Number(value)
     router.push(`${pathname}?page=1&size=${newSize.toString()}`)
-  };
+  }
 
   const setPageIndex = (newIndex: number) => {
-    router.push(`${pathname}?page=${(newIndex).toString()}`)
-  };
+    router.push(`${pathname}?page=${newIndex.toString()}`)
+  }
 
   return (
     <div className="flex items-center justify-between px-2">
@@ -56,10 +56,7 @@ export function Pagination<TData>({ table }: DataTablePaginationProps<TData>) {
         {/* Page size selection */}
         <div className="flex items-center space-x-2">
           <p className="text-sm font-medium">Rows per page</p>
-          <Select
-            value={`${pageSize}`}
-            onValueChange={handlePageSizeChange}
-          >
+          <Select value={`${pageSize}`} onValueChange={handlePageSizeChange}>
             <SelectTrigger className="h-8 w-[70px]">
               <SelectValue placeholder={`${pageSize}`} />
             </SelectTrigger>
@@ -89,7 +86,9 @@ export function Pagination<TData>({ table }: DataTablePaginationProps<TData>) {
           <Button
             variant="outline"
             className="h-8 w-8 p-0"
-            onClick={() => setPageIndex(table.getState().pagination.pageIndex - 1)}
+            onClick={() =>
+              setPageIndex(table.getState().pagination.pageIndex - 1)
+            }
             disabled={!table.getCanPreviousPage()}
           >
             <span className="sr-only">Go to previous page</span>
@@ -98,7 +97,9 @@ export function Pagination<TData>({ table }: DataTablePaginationProps<TData>) {
           <Button
             variant="outline"
             className="h-8 w-8 p-0"
-            onClick={() => setPageIndex(table.getState().pagination.pageIndex + 1)}
+            onClick={() =>
+              setPageIndex(table.getState().pagination.pageIndex + 1)
+            }
             disabled={!table.getCanNextPage()}
           >
             <span className="sr-only">Go to next page</span>
@@ -116,5 +117,5 @@ export function Pagination<TData>({ table }: DataTablePaginationProps<TData>) {
         </div>
       </div>
     </div>
-  );
+  )
 }
