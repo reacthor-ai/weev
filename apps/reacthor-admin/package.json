@@ -27,6 +27,7 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "csv-parser": "^3.0.0",
+    "experimental-prisma-webpack-plugin": "^0.0.5",
     "jotai": "^2.6.5",
     "jotai-tanstack-query": "^0.8.5",
     "lucide-react": "^0.336.0",

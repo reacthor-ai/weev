@@ -1,4 +1,17 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {};
+const path = require("path");
+const { PrismaPlugin } = require("experimental-prisma-webpack-plugin");
 
-export default nextConfig;
+module.exports = {
+  output: "standalone",
+  reactStrictMode: true,
+  experimental: {
+    outputFileTracingRoot: path.join(__dirname, "../../"),
+  },
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()];
+    }
+
+    return config;
+  },
+};

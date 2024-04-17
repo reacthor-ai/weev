@@ -362,6 +362,9 @@ importers:
       csv-parser:
         specifier: ^3.0.0
         version: 3.0.0
+      experimental-prisma-webpack-plugin:
+        specifier: ^0.0.5
+        version: 0.0.5
       jotai:
         specifier: ^2.6.5
         version: 2.8.0(@types/react@18.2.79)(react@18.2.0)
@@ -8990,6 +8993,10 @@ packages:
       to-regex: 3.0.2
     transitivePeerDependencies:
       - supports-color
+    dev: false
+
+  /experimental-prisma-webpack-plugin@0.0.5:
+    resolution: {integrity: sha512-jPT5+xHCjZ2xszcv8VFvMrkK5M+gRtfaSrra+5jjn/KsWDDB/Oa95iDjmaiA3IUJZOPBkqhkF+ipA/J8/k0sMg==}
     dev: false
 
   /expr-eval@2.0.2:
