@@ -1,5 +1,5 @@
 const path = require("path");
-const { PrismaPlugin } = require("experimental-prisma-webpack-plugin");
+const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
 
 module.exports = {
   output: "standalone",
