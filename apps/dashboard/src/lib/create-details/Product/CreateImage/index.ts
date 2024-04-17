@@ -1,1 +1,0 @@
-export { CreateImageDetails } from './CreateImage'

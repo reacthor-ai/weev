@@ -1,1 +1,0 @@
-export { BrandIdentity } from './BrandIdentity'
