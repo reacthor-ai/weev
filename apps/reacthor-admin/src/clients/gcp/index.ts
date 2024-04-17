@@ -114,7 +114,7 @@ export const mergeCSVFiles = async (params: PickTransactionMessaging) => {
             if (row['Account name'] === 'User' || row['Account name'] === 'Account') {
               allRows.push({
                 content: row['_4'],
-                role: row['Account name'] === 'Account' ? MessagingRoleValue.System : MessagingRoleValue.User,
+                role: row['Account name'] === 'Account' ? MessagingRoleValue.Assistant : MessagingRoleValue.User,
                 datastoreId,
               });
             }

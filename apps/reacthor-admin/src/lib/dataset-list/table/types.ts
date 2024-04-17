@@ -4,4 +4,5 @@ export type LineMessages = {
   id: string
   updatedAt: string
   content: string
+  group: number
 }

@@ -2,13 +2,14 @@ import { reacthorDbClient } from '@/db'
 
 export type UpdateMessageContentByIdParams = {
   messagingId: string
-  content: string
+  content?: string
+  group?: number
 }
 
 export const updateMessageContentById = async (
   params: UpdateMessageContentByIdParams
 ) => {
-  const { messagingId, content } = params
+  const { messagingId, content, group } = params
 
   try {
     const result = await reacthorDbClient.messaging.update({
@@ -16,7 +17,8 @@ export const updateMessageContentById = async (
         id: messagingId
       },
       data: {
-        content
+        ...(content && { content }),
+        ...(group && { group })
       }
     })
 

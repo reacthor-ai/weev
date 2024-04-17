@@ -27,7 +27,6 @@ export const DatasetList = (props: DatasetListProps) => {
   const { dataStoreList } = props
   const datasetType = dataStoreList.fileType
   const messaging = dataStoreList.messaging
-
   return (
     <div className={'overflow-auto h-screen mt-6 ml-6'}>
       {datasetType === 'RAG' && (
@@ -50,7 +49,7 @@ export const DatasetList = (props: DatasetListProps) => {
             description="Annotate your data, to guide your model."
           />
 
-          <DatasetTable data={messaging as any} columns={columns} />
+          <DatasetTable data={messaging} columns={columns} />
         </>
       )}
       <div style={{ marginBottom: '3rem' }} />

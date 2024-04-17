@@ -11,11 +11,49 @@ import { useUpdateMessageByIdAtom } from '@/store/messaging/update'
 export const columns: ColumnDef<LineMessages>[] = [
   {
     accessorKey: 'role',
-    header: ({ column }) => <p>Sender type</p>,
+    header: ({ column }) => <p>Role</p>,
     cell: ({ row }) => {
       return (
         <span className="max-w-[500px] truncate font-medium">
           {row.getValue('role')}
+        </span>
+      )
+    }
+  },
+  {
+    accessorKey: 'group',
+    header: () => <p>Group</p>,
+    cell: cellValue => {
+      const [value, setValue] = useState<number>(
+        cellValue.row.getValue('group')
+      )
+
+      const [{ mutate: updateMessageById }] = useUpdateMessageByIdAtom()
+      const handleSetValue = async () => {
+        await updateMessageById(
+          {
+            group: parseInt(value),
+            messagingId: cellValue.row.getValue('id')
+          },
+          {
+            onSettled: data => {
+              //
+            }
+          }
+        )
+      }
+
+      return (
+        <span className="max-w-[500px] truncate font-medium">
+          <Input
+            id="group"
+            placeholder={'Group'}
+            className="col-span-8"
+            value={value}
+            type='number'
+            onChange={e => setValue(e.target.value)}
+            onBlur={handleSetValue}
+          />
         </span>
       )
     }
@@ -47,7 +85,7 @@ export const columns: ColumnDef<LineMessages>[] = [
           },
           {
             onSettled: data => {
-              console.log({ data })
+              //
             }
           }
         )

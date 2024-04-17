@@ -3,7 +3,6 @@
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
-  SheetClose,
   SheetContent,
   SheetDescription,
   SheetFooter,
@@ -18,8 +17,12 @@ import { v4 as uuidv4 } from 'uuid'
 import { REACTHOR_API_ROUTES } from '@/shared-utils/constant/navigation'
 import { SignedPostPolicyV4Output } from '@google-cloud/storage'
 import { STORAGE_PREFIX } from '@/shared-utils/constant/prefix'
-import { CreateGCPBucketStoreRagParams, PickTransactionMessaging } from '@/db/bucket'
+import {
+  CreateGCPBucketStoreRagParams,
+  PickTransactionMessaging
+} from '@/db/bucket'
 import { FileTypeValue } from '@/db'
+import { useSearchParams } from 'next/navigation'
 
 type DatasetSheetProps = {
   onOpenChange: (v: boolean) => void
@@ -31,16 +34,12 @@ type DatasetSheetProps = {
 }
 
 export function DatasetSheet(props: DatasetSheetProps) {
-  const {
-    open,
-    onOpenChange,
-    children,
-    organizationId,
-    id: datastoreId,
-    fileType
-  } = props
+  const { open, onOpenChange, children, organizationId, fileType } = props
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+
+  const params = useSearchParams()
+  const datastoreId = params.get('id')
 
   const transformAndSaveFineTune = async (params: PickTransactionMessaging) => {
     try {
@@ -50,6 +49,7 @@ export function DatasetSheet(props: DatasetSheetProps) {
       })
       setLoading(false)
       onOpenChange(false)
+      window.location.reload()
       return await response.json()
     } catch (error) {
       console.log(`Error when triggering function`, error)
@@ -64,6 +64,7 @@ export function DatasetSheet(props: DatasetSheetProps) {
       })
       setLoading(false)
       onOpenChange(false)
+      window.location.reload()
       return await response.json()
     } catch (error) {
       console.log(`Error when triggering function`, error)
@@ -177,9 +178,7 @@ export function DatasetSheet(props: DatasetSheetProps) {
             onClick={handleUploadManyFiles}
             className="bg-white text-black hover:bg-black hover:text-white"
           >
-            {loading ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : null}
+            {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
             Upload Files
           </Button>
         </SheetHeader>

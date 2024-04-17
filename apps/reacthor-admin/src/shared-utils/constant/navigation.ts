@@ -13,9 +13,13 @@ export const REACTHOR_API_ROUTES = {
   CREATE_USER: '/dashboard/api/create-user',
   CREATE_DATA_SET: '/dashboard/api/create-dataset',
   GET_DATA_SETS: '/dashboard/api/get-dataset',
+  GET_LIST_FINE_TUNE_JOB: '/dashboard/api/get-fine-tune-jobs',
   CREATE_GCP_STORE_RAG: '/dashboard/api/create-gcp-store',
   UPDATE_MESSAGE_BY_ID: '/dashboard/api/update-message-by-id',
   DELETE_MESSAGE_BY_ID: '/dashboard/api/delete-message-by-id',
+  AI: {
+    UPDATE_DATA_SET: '/dashboard/api/ai/update-data-set',
+  },
   GCP: {
     STORAGE: {
       UPLOAD_FILE: '/dashboard/api/gcp/storage/upload-many-files',
