@@ -36,18 +36,30 @@ model User {
 }
 
 model Organization {
-  id        String      @id @default(cuid())
-  title     String      @unique
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
+  id        String        @id @default(cuid())
+  title     String        @unique
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
   storage   Datastore[]
+  fineTune  FinetuneJob[]
   users     User[]
 }
 
-model FinetuneJobs {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model FinetuneJob {
+  id           String   @id @default(cuid())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  title        String
+  dataStoreId  String
+  batchSize    Int?
+  learningRate Int?
+  numOfEpochs  Int?
+
+  fineTuneJobId String?
+  openAiFileId  String?
+
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String?
 }
 
 model Datastore {
@@ -60,11 +72,12 @@ model Datastore {
   dataType  DataType?
 
   // ETL system that transform the data, once it's uploaded.
-  masterBucketId String?
-  gcpBucket      GcpBucketStore[]
-  messaging      Messaging[]
-  organization   Organization?    @relation(fields: [organizationId], references: [id])
-  organizationId String?
+  masterBucketId   String?
+  finetuneBucketId String?
+  gcpBucket        GcpBucketStore[]
+  messaging        Messaging[]
+  organization     Organization?    @relation(fields: [organizationId], references: [id])
+  organizationId   String?
 }
 
 model Messaging {
@@ -73,6 +86,7 @@ model Messaging {
   updatedAt   DateTime      @updatedAt
   role        MessagingRole
   content     String        @db.LongText
+  group       Int?          @default(0)
   datastore   Datastore?    @relation(fields: [datastoreId], references: [id])
   datastoreId String?
 }
