@@ -141,8 +141,36 @@ export async function uploadMessagesToJsonlAndUse({
             },
             { status: 200 }
           )
+        } else {
+          return Response.json(
+            {
+              success: true,
+              data: null,
+              error: 'Failed to update data in db'
+            },
+            { status: 400 }
+          )
         }
+      } else {
+        return Response.json(
+          {
+            success: true,
+            data: null,
+            error: 'Failed to fine_tune data'
+          },
+          { status: 400 }
+        )
       }
+
+    } else {
+      return Response.json(
+        {
+          success: true,
+          data: null,
+          error: 'Failed to run.'
+        },
+        { status: 400 }
+      )
     }
   } catch (error) {
     return Response.json(
