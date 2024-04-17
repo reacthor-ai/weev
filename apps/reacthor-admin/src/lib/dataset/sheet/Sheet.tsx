@@ -39,7 +39,7 @@ export function DatasetSheet(props: DatasetSheetProps) {
   const [loading, setLoading] = useState<boolean>(false)
 
   const params = useSearchParams()
-  const datastoreId = params.get('id')
+  const datastoreId = params.get('id') ?? 'NOT_FOUND'
 
   const transformAndSaveFineTune = async (params: PickTransactionMessaging) => {
     try {
