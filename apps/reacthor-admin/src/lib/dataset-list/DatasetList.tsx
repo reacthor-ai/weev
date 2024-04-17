@@ -31,15 +31,13 @@ export const DatasetList = (props: DatasetListProps) => {
     <div className={'overflow-auto h-screen mt-6 ml-6'}>
       {datasetType === 'RAG' && (
         <>
-        <Title
-          title="Alycia data set"
-          description="Edit your RAG docs, to make sure the model follows a set of guidelines."
-        />
-          {
-            dataStoreList.gcpBucket.map((va, key) => {
-              return <>{key + 1} document available</>
-            })
-          }
+          <Title
+            title="Alycia data set"
+            description="Edit your RAG docs, to make sure the model follows a set of guidelines."
+          />
+          {dataStoreList.gcpBucket.map((_: unknown, key: number) => {
+            return <>{key + 1} document available</>
+          })}
         </>
       )}
       {datasetType === 'FINE_TUNE' && (
@@ -49,7 +47,7 @@ export const DatasetList = (props: DatasetListProps) => {
             description="Annotate your data, to guide your model."
           />
 
-          <DatasetTable data={messaging} columns={columns} />
+          <DatasetTable data={messaging as any} columns={columns} />
         </>
       )}
       <div style={{ marginBottom: '3rem' }} />
