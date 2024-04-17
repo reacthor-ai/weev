@@ -24,7 +24,7 @@ export const columns: ColumnDef<LineMessages>[] = [
     accessorKey: 'group',
     header: () => <p>Group</p>,
     cell: cellValue => {
-      const [value, setValue] = useState<number>(
+      const [value, setValue] = useState<string>(
         cellValue.row.getValue('group')
       )
 
