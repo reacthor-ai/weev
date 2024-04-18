@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { useCreateUserAtom } from '@/store/user/create'
 import { Loader2 } from 'lucide-react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 
 export const CreateOrganization = () => {
   const [title, setTitle] = useState<string>('')
@@ -35,7 +35,7 @@ export const CreateOrganization = () => {
                 disabled={isPending}
                 onClick={() => createUser({ organizationTitle: title }, {
                   onSettled: () => {
-                    router.reload()
+                    return router.refresh()
                   }
                 })}
                 className="bg-white text-black hover:bg-black hover:text-white"
