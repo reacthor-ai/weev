@@ -37,6 +37,11 @@ export const CreateFinetuningJob = () => {
   const organizationId = data?.result?.data![0]?.organizationId
 
   const handleSetValue = async () => {
+    if (!data?.result.data?.length) {
+      console.log('nope')
+      return null
+    }
+
     await uploadFineTuneJob(
       {
         organizationId: organizationId ?? '',
@@ -61,7 +66,11 @@ export const CreateFinetuningJob = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <ButtonDefault title={'New Finetune'} />
+        <Button
+          className="bg-white text-black hover:bg-black hover:text-white"
+        >
+          New Fine tune
+        </Button>
       </DialogTrigger>
       <DialogContent className="w-[100%] flex flex-col justify-start items-start">
         <DialogHeader>
