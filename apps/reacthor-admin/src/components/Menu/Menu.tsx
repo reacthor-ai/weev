@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/resizable'
 import { type ReactNode, useState } from 'react'
 import { Separator } from '@/components/ui/separator'
-import { DatabaseIcon, LayoutGrid, Settings, ZapIcon } from 'lucide-react'
+import { DatabaseIcon, LayoutGrid, PlayIcon, Settings, ZapIcon } from 'lucide-react'
 import { Nav } from '@/components/ui/nav'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import Image from 'next/image'
@@ -67,12 +67,18 @@ export const Menu = (props: MenuProps) => {
                 variant: 'default',
                 href: NAVIGATION.HOME
               },
-              {
-                title: 'Fine tune',
-                icon: ZapIcon,
-                variant: 'ghost',
-                href: NAVIGATION.FINE_TUNE
-              },
+              // {
+              //   title: 'Playground',
+              //   icon: PlayIcon,
+              //   variant: 'ghost',
+              //   href: NAVIGATION.PLAYGROUND
+              // },
+              // {
+              //   title: 'Fine tune',
+              //   icon: ZapIcon,
+              //   variant: 'ghost',
+              //   href: NAVIGATION.FINE_TUNE
+              // },
               {
                 title: 'Dataset',
                 icon: DatabaseIcon,

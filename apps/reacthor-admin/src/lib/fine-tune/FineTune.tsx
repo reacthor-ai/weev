@@ -2,9 +2,11 @@
 
 import { CreateFinetuningJob } from './create/CreateFinetuningJob'
 import { useGetListFineTuneJobAtomAtom } from '@/store/fine-tune/list'
+import { FinetuneList } from '@/lib/fine-tune/card'
 
 export const FineTune = () => {
   const [{ data, isLoading }] = useGetListFineTuneJobAtomAtom()
+
   return (
     <div className={'overflow-auto h-screen'}>
       <div className="flex flex-row justify-between">
@@ -12,21 +14,22 @@ export const FineTune = () => {
         <CreateFinetuningJob />
       </div>
 
-      <div className='mt-8'>
-        {
-          isLoading ? <>Loading...</> : (
-            <>
-            {data && data.status === 'fulfilled' ? (<>
-
-              {
-                data?.result?.data?.map((fineTune) => {
-                  return <div key={fineTune.id}>{fineTune.title}</div>
-                })
-              }
-            </>) : (<>Nothing yet...</>)}
-            </>
-          )
-        }
+      <div className="mt-8">
+        {isLoading ? (
+          <>Loading...</>
+        ) : (
+          <>
+            {data && data.status === 'fulfilled' ? (
+              <>
+                {data?.result?.data?.map(fineTune => {
+                  return <FinetuneList {...fineTune} key={fineTune.id} />
+                })}
+              </>
+            ) : (
+              <>Nothing yet...</>
+            )}
+          </>
+        )}
       </div>
     </div>
   )

@@ -145,3 +145,37 @@ export const getDatasetById = async (params: GetDatasetByIdParams): Promise<Retu
       }
     }
 }
+
+export type DeleteDatasetByIdParams = {
+  id: string
+}
+
+export const deleteDatasetById = async (params: DeleteDatasetByIdParams) => {
+    const { id } = params;
+
+    try {
+      const result = await reacthorDbClient.datastore.delete({
+        where: { id }
+      });
+
+      if (result.id) {
+        return Response.json({
+          success: true,
+          data: result,
+          error: null
+        })
+      }
+
+      return Response.json({
+        success: false,
+        data: null,
+        error: 'Deletion error'
+      })
+    } catch (error) {
+      return Response.json({
+        success: false,
+        data: null,
+        error
+      })
+    }
+}

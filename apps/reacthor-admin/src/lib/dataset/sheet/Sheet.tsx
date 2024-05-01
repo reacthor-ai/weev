@@ -23,6 +23,7 @@ import {
 } from '@/db/bucket'
 import { FileTypeValue } from '@/db'
 import { useSearchParams } from 'next/navigation'
+import { useDeleteDatasetByIdAtom } from '@/store/dataset/delete'
 
 type DatasetSheetProps = {
   onOpenChange: (v: boolean) => void
@@ -37,6 +38,7 @@ export function DatasetSheet(props: DatasetSheetProps) {
   const { open, onOpenChange, children, organizationId, fileType } = props
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState<boolean>(false)
+  const [{ mutate: deleteDatasetById, isPending: isPendingDeleteDataset }] = useDeleteDatasetByIdAtom();
 
   const params = useSearchParams()
   const datastoreId = params.get('id') ?? 'NOT_FOUND'
@@ -185,7 +187,24 @@ export function DatasetSheet(props: DatasetSheetProps) {
         <div className="grid gap-4 py-2 w-[100%]">
           <UploadBox files={files} setFiles={setFiles} />
         </div>
-        <SheetFooter></SheetFooter>
+        <SheetFooter>
+          <Button
+            disabled={isPendingDeleteDataset}
+            onClick={() => {
+              return deleteDatasetById({
+                id: datastoreId
+              }, {
+                onSettled: () => {
+                  window.location.reload();
+                }
+              })
+            }}
+            className="bg-white text-black hover:bg-black hover:text-white"
+          >
+            {isPendingDeleteDataset ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Delete dataset
+          </Button>
+        </SheetFooter>
       </SheetContent>
     </Sheet>
   )

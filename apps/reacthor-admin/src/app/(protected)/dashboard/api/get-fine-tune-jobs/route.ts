@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server'
-import { listFinetune } from '@/db/fine-tune'
+import { fineTuneList } from '@/clients/openai/fineTuneList'
 
 export async function GET(request: NextRequest) {
   const _ = request.nextUrl.searchParams
-  return listFinetune()
+  return Response.json(await fineTuneList())
 }

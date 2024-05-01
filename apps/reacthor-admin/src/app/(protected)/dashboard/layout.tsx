@@ -3,6 +3,7 @@ import { Menu } from '@/components/Menu'
 import { Container } from '@/components/ui/container'
 import { getUser } from '@/db/user'
 import { CreateOrganization } from '@/lib/organization/CreateOrganization'
+import { Toaster } from 'sonner'
 
 type DashboardLayoutProps = {
   children: ReactNode
@@ -25,6 +26,7 @@ export default async function DashboardLayout(props: DashboardLayoutProps) {
 
   return (
     <Container>
+      <Toaster />
       <Menu>{children}</Menu>
     </Container>
   )

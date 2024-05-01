@@ -3,6 +3,10 @@
 import { DatasetTable } from './table'
 import { columns } from './table/Columns/Columns'
 import { ReturnGetdatasetByIdType } from '@/db/dataset'
+import { useDeleteDatasetByIdAtom } from '@/store/dataset/delete'
+import { Button } from '@/components/ui/button'
+import { Loader2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type DatasetListProps = {
   dataStoreList: ReturnGetdatasetByIdType
@@ -27,10 +31,37 @@ export const DatasetList = (props: DatasetListProps) => {
   const { dataStoreList } = props
   const datasetType = dataStoreList.fileType
   const messaging = dataStoreList.messaging
+  const [{ mutate: deleteDatasetById, isPending: isPendingDeleteDataset }] =
+    useDeleteDatasetByIdAtom()
+  const router = useRouter()
+
   return (
     <div className={'overflow-auto h-screen mt-6 ml-6'}>
+      <div className='my-5'>
+        <Button
+          disabled={isPendingDeleteDataset}
+          onClick={() => {
+            return deleteDatasetById(
+              {
+                id: dataStoreList.id
+              },
+              {
+                onSettled: () => {
+                  router.back()
+                }
+              }
+            )
+          }}
+          className="bg-white text-black hover:bg-black hover:text-white"
+        >
+          {isPendingDeleteDataset ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : null}
+          Delete dataset
+        </Button>
+      </div>
       {datasetType === 'RAG' && (
-        <>
+        <div>
           <Title
             title="Alycia data set"
             description="Edit your RAG docs, to make sure the model follows a set of guidelines."
@@ -38,7 +69,7 @@ export const DatasetList = (props: DatasetListProps) => {
           {dataStoreList.gcpBucket.map((_: unknown, key: number) => {
             return <>{key + 1} document available</>
           })}
-        </>
+        </div>
       )}
       {datasetType === 'FINE_TUNE' && (
         <>

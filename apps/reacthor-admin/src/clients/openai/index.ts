@@ -3,9 +3,14 @@ import fs from 'fs'
 import { reacthorDbClient } from '@/db'
 import { STORAGE_PREFIX } from '@/shared-utils/constant/prefix'
 import { bucket } from '@/clients/gcp'
+import { ChatOpenAI } from '@langchain/openai'
 
-const openAI = new OpenAI({
+export const openAI = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
+})
+
+export const chatOpenAI = new ChatOpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 })
 
 export type UploadMessagesToJsonAndUseParams = {
@@ -93,7 +98,7 @@ export async function uploadMessagesToJsonlAndUse({
 
   const finetuneId = fineTuneJob.id
 
-  const [fileStream, tempFilename]: any = await uploadMessagesTrigger({
+  const [fileStream, tempFilename] = await uploadMessagesTrigger({
     finetuneId,
     assistantChat,
     dataStoreId,
@@ -102,12 +107,12 @@ export async function uploadMessagesToJsonlAndUse({
 
   try {
     const openAIFile = await openAI.files.create({
-      file: fileStream,
+      file: fileStream as fs.ReadStream,
       purpose: 'fine-tune'
     })
 
     // Cleanup: Delete the temporary file
-    fs.unlinkSync(tempFilename)
+    fs.unlinkSync(tempFilename as string)
 
     if (openAIFile.id) {
       const fineTuneJob = await openAI.fineTuning.jobs.create({
@@ -161,7 +166,6 @@ export async function uploadMessagesToJsonlAndUse({
           { status: 400 }
         )
       }
-
     } else {
       return Response.json(
         {

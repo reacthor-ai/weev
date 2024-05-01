@@ -14,23 +14,23 @@ export const listFinetune = async () => {
         }
       })
 
-      return Response.json({
+      return {
         success: true,
         data: result,
         error: null
-      })
+      }
     }
 
-    return Response.json({
+    return {
       success: false,
       data: null,
       error: 'NO USER'
-    })
+    }
   } catch (error) {
-    return Response.json({
+    return {
       success: true,
       data: null,
       error
-    })
+    }
   }
 }

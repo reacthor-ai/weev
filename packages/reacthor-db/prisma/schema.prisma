@@ -12,11 +12,18 @@ enum DataType {
   LINE
   WHATSAPP
   DOCUMENT
+  SHOPIFY
+  EXTERNAL_LINK // scraper here.
 }
 
 enum FileType {
   RAG
   FINE_TUNE
+}
+
+enum CompanyRole {
+  CUSTOMER_SERVICE
+  SEARCH
 }
 
 enum MessagingRole {
@@ -86,6 +93,7 @@ model Messaging {
   updatedAt   DateTime      @updatedAt
   role        MessagingRole
   content     String        @db.LongText
+  tag         String?
   group       Int?          @default(0)
   datastore   Datastore?    @relation(fields: [datastoreId], references: [id])
   datastoreId String?

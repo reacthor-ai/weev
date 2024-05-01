@@ -9,7 +9,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog'
-import { Button, ButtonDefault } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useGetListDatasetAtom } from '@/store/dataset/list'
@@ -24,6 +24,7 @@ import {
 import { useUploadFineTuneJobAtom } from '@/store/messaging/upload-fine-tune-job'
 import { v4 as uuidv4 } from 'uuid'
 import { Input } from '@/components/ui/input'
+import { Textarea } from '@/components/ui/textarea'
 
 export const CreateFinetuningJob = () => {
   const [title, setTitle] = useState<string>('')
@@ -38,7 +39,6 @@ export const CreateFinetuningJob = () => {
 
   const handleSetValue = async () => {
     if (!data?.result.data?.length) {
-      console.log('nope')
       return null
     }
 
@@ -66,9 +66,7 @@ export const CreateFinetuningJob = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button
-          className="bg-white text-black hover:bg-black hover:text-white"
-        >
+        <Button className="bg-white text-black hover:bg-black hover:text-white">
           New Fine tune
         </Button>
       </DialogTrigger>
@@ -84,7 +82,7 @@ export const CreateFinetuningJob = () => {
               placeholder={'Name your Dataset'}
               onChange={e => setTitle(e.target.value)}
             />
-            <Input
+            <Textarea
               id="assistantChat"
               placeholder={'What should your assistant chat be?'}
               onChange={e => setAssistantChat(e.target.value)}
@@ -113,20 +111,20 @@ export const CreateFinetuningJob = () => {
           </Select>
         </div>
         <DialogFooter>
-          {
-            successMessage ? "Success Please close out now!" : (
-              <Button
-                disabled={isPending}
-                onClick={handleSetValue}
-                className="bg-white text-black hover:bg-black hover:text-white"
-              >
-                {isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : null}
-                Create
-              </Button>
-            )
-          }
+          {successMessage ? (
+            'Success Please close out now!'
+          ) : (
+            <Button
+              disabled={isPending}
+              onClick={handleSetValue}
+              className="bg-white text-black hover:bg-black hover:text-white"
+            >
+              {isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : null}
+              Create
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>

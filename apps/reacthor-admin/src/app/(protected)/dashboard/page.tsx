@@ -1,3 +1,10 @@
+import { PageHeader } from '@/components/PageHeader/PageHeader'
+import { Home } from '@/lib/home/Home'
+
 export default function DashboardHome() {
-  return <>Content page</>
+  return (
+    <PageHeader title={'Projects & Automation'}>
+      <Home />
+    </PageHeader>
+  )
 }

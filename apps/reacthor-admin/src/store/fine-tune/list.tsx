@@ -2,7 +2,7 @@ import { atomWithQuery } from 'jotai-tanstack-query'
 import { useAtom } from 'jotai'
 import { REACTHOR_API_ROUTES } from '@/shared-utils/constant/navigation'
 import { ERROR_MESSAGES } from '@/store/types'
-import { ReturnGetListFineTune } from '@/db/fine-tune'
+import { ReturnFinetuneList } from '@/clients/openai/fineTuneList'
 
 type GetListFinetuneJobReturnAtom<T> = {
   status: 'fulfilled' | 'rejected'
@@ -13,7 +13,7 @@ type GetListFinetuneJobReturnAtom<T> = {
 export const getListFineTuneJobAtom = atomWithQuery(() => ({
   queryKey: ['getListFineTuneJob'],
   queryFn: async (): Promise<
-    GetListFinetuneJobReturnAtom<ReturnGetListFineTune[]>
+    GetListFinetuneJobReturnAtom<ReturnFinetuneList[]>
   > => {
     try {
       const response = await fetch(REACTHOR_API_ROUTES.GET_LIST_FINE_TUNE_JOB, {
