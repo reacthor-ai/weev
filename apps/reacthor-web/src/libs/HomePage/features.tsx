@@ -59,8 +59,7 @@ export default function Features() {
           <p className="mt-6 text-lg">
             Unleash the power of ReacthorAI for your business.
           </p>
-          <div className="mt-12 relative">
-          </div>
+          <div className="mt-12 relative"></div>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {features.map(feature => {
@@ -81,28 +80,7 @@ export default function Features() {
   )
 }
 
-function BarChartIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <line x1="12" x2="12" y1="20" y2="10" />
-      <line x1="18" x2="18" y1="20" y2="4" />
-      <line x1="6" x2="6" y1="20" y2="16" />
-    </svg>
-  )
-}
-
-function DotIcon(props) {
+function DotIcon(props: any) {
   return (
     <svg
       {...props}
@@ -117,26 +95,6 @@ function DotIcon(props) {
       strokeLinejoin="round"
     >
       <circle cx="12.1" cy="12.1" r="1" />
-    </svg>
-  )
-}
-
-function GaugeIcon(props) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="m12 14 4-4" />
-      <path d="M3.34 19a10 10 0 1 1 17.32 0" />
     </svg>
   )
 }
