@@ -31,9 +31,9 @@ export default function HomePageV1() {
           </div>
         </nav>
 
-        <header className="flex flex-col items-center justify-center text-center">
+        <header className="flex flex-col items-center mx-4 justify-center text-center">
           <div className="bg-[#0e0e0e] text-[#f6f6f6] p-8 rounded-lg text-center">
-            <h1 className="font-bold text-8xl leading-none">
+            <h1 className="font-bold md:text-8xl text-2xl leading-none">
               WHERE AI STARTUPS
               <br />
               AND BUSINESSES
@@ -76,7 +76,7 @@ export default function HomePageV1() {
         </header>
 
         {/*trusted by*/}
-        <div>
+        <div className='mx-4'>
           <header className="flex flex-col pb-8 items-center justify-center text-center">
             <div className="bg-[#0e0e0e] text-[#f6f6f6] p-8 rounded-lg text-center">
               <p className="mb-3">Our Credentials</p>
@@ -87,8 +87,8 @@ export default function HomePageV1() {
                       key={key}
                       className="pr-4 rounded-full"
                       src={image}
-                      width={75}
-                      height={75}
+                      width={50}
+                      height={50}
                       alt={'logo'}
                     />
                   )
