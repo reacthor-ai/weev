@@ -9,7 +9,11 @@ export const Footer = () => {
       <header className="flex flex-col pb-8 items-center justify-center text-center">
         <div className="bg-[#0e0e0e] text-[#f6f6f6] p-8 rounded-lg text-center">
           <ul className="flex align-middle justify-between">
-            <li className="pr-3">Contact Us</li>
+            <li
+              onClick={() => {
+                return window.open('https://cal.com/reacthor-ai')
+              }}
+              className="pr-3">Contact Us</li>
             <li
               className={'cursor-pointer'}
               onClick={() => router.push('/privacy')}
