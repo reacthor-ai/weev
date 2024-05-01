@@ -3,6 +3,7 @@ import { Montserrat } from 'next/font/google'
 import './globals.css'
 import Image from 'next/image'
 import reacthorLogo from '../../public/weev-logo.svg'
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Montserrat({ subsets: ['latin'] })
 
@@ -33,6 +34,7 @@ export default function RootLayout({
           </div>
         </nav>
         {children}
+        <Analytics />
       </div>
       </body>
     </html>
