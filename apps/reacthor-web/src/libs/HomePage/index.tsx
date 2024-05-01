@@ -42,7 +42,7 @@ export default function HomePageV1() {
             </Avatar>
           </div>
           <p className="max-w-lg mb-8 mx-auto text-[#888]">
-            🇺🇸 American developers based in APAC covering (Singapore, Thailand,
+            Based in APAC covering (Singapore, Thailand,
             Indonesia, Australia, and Malaysia) helping both large and small
             companies integrate new Generative AI tools into their existing
             systems or develop new ones.
