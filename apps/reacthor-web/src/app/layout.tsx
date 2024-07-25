@@ -27,8 +27,8 @@ export default function RootLayout({
             <Image
               src={reacthorLogo}
               alt={'reacthor-logo'}
-              width={80}
-              height={80}
+              width={65}
+              height={65}
             />
             <h1 className="text-xl font-bold">Reacthor AI.</h1>
           </div>

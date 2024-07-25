@@ -8,30 +8,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-enum DataType {
-  LINE
-  WHATSAPP
-  DOCUMENT
-  SHOPIFY
-  EXTERNAL_LINK // scraper here.
-}
-
-enum FileType {
-  RAG
-  FINE_TUNE
-}
-
-enum CompanyRole {
-  CUSTOMER_SERVICE
-  SEARCH
-}
-
-enum MessagingRole {
-  System
-  User
-  Assistant
-}
-
 model User {
   id             String       @id @default(cuid())
   name           String
@@ -43,63 +19,28 @@ model User {
 }
 
 model Organization {
-  id        String        @id @default(cuid())
-  title     String        @unique
-  createdAt DateTime      @default(now())
-  updatedAt DateTime      @updatedAt
+  id        String      @id @default(cuid())
+  title     String      @unique
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
   storage   Datastore[]
-  fineTune  FinetuneJob[]
   users     User[]
 }
 
-model FinetuneJob {
-  id           String   @id @default(cuid())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  title        String
-  dataStoreId  String
-  batchSize    Int?
-  learningRate Int?
-  numOfEpochs  Int?
+model Datastore {
+  id        String   @id @default(cuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  category  String?
 
-  fineTuneJobId String?
-  openAiFileId  String?
-
-  organization   Organization? @relation(fields: [organizationId], references: [id])
+  // ETL system that transform the data, once it's uploaded.
+  bucket         GcpBucketStore[]
+  organization   Organization?    @relation(fields: [organizationId], references: [id])
   organizationId String?
 }
 
-model Datastore {
-  id        String    @id @default(cuid())
-  title     String
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  category  String?
-  fileType  FileType?
-  dataType  DataType?
-
-  // ETL system that transform the data, once it's uploaded.
-  masterBucketId   String?
-  finetuneBucketId String?
-  gcpBucket        GcpBucketStore[]
-  messaging        Messaging[]
-  organization     Organization?    @relation(fields: [organizationId], references: [id])
-  organizationId   String?
-}
-
-model Messaging {
-  id          String        @id @default(cuid())
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  role        MessagingRole
-  content     String        @db.LongText
-  tag         String?
-  group       Int?          @default(0)
-  datastore   Datastore?    @relation(fields: [datastoreId], references: [id])
-  datastoreId String?
-}
-
-model GcpBucketStore {
+model BucketStore {
   id          String     @id @default(cuid())
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt

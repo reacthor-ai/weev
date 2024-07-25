@@ -178,7 +178,6 @@ export async function enqueueProductDetailPage({page}: Pick<Params, 'page'>) {
 
 export async function enqueueCategoryDetailPage({page, enqueueLinks}: Params) {
   const results = await enqueueProductDetailPage({page})
-  console.log('🚀🚀 🚀  Got it! Storing product: ', {results: results.title})
   const data = await Dataset.open('finix-batches');
   await data.pushData(results);
 

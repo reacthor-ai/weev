@@ -202,11 +202,11 @@ export const pomelCrawler = {
     console.log(`Processing: ${request.url}`);
     const results = await enqueueProductDetailPage({page})
     console.log({results})
-    // if (request.label === MarketPlaceLabel.CATEGORY) {
-    //   await enqueueCategoryDetailsPage({page, enqueueLinks})
-    // } else {
-    //   await enqueueCategoryPage({page, enqueueLinks})
-    // }
+    if (request.label === MarketPlaceLabel.CATEGORY) {
+      await enqueueCategoryDetailsPage({page, enqueueLinks})
+    } else {
+      await enqueueCategoryPage({page, enqueueLinks})
+    }
   },
   maxRequestsPerCrawl: 3, // Limit the number of requests to prevent infinite crawling in large sites,
   // headless: false
