@@ -7,12 +7,13 @@ import {
 } from '@/components/ui/resizable'
 import { type ReactNode, useState } from 'react'
 import { Separator } from '@/components/ui/separator'
-import { DatabaseIcon, LayoutGrid, PlayIcon, Settings, ZapIcon } from 'lucide-react'
+import { Settings, WorkflowIcon } from 'lucide-react'
 import { Nav } from '@/components/ui/nav'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import Image from 'next/image'
 import reacthorSvg from '../../../public/reacthor.svg'
 import { NAVIGATION } from '@/shared-utils/constant/navigation'
+import { useParams, useRouter } from 'next/navigation'
 
 const defaultLayout = [10, 440, 655]
 
@@ -25,6 +26,10 @@ export const Menu = (props: MenuProps) => {
   const { children, childrenWithTabs } = props
 
   const [isCollapsed, setIsCollapsed] = useState<boolean>(true)
+  const router = useRouter()
+  const { id, workflowId } = useParams()
+
+  if (workflowId) return <>{children}</>
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -47,13 +52,16 @@ export const Menu = (props: MenuProps) => {
             <Image
               alt="reacthor-logo"
               height={40}
-              className="block m-auto"
+              className="block m-auto cursor-pointer"
               width={40}
               style={{
                 aspectRatio: '100/100',
                 objectFit: 'cover'
               }}
               src={reacthorSvg}
+              onClick={() => {
+                return router.push(NAVIGATION.PROJECTS)
+              }}
             />
           </div>
           <Separator />
@@ -61,35 +69,41 @@ export const Menu = (props: MenuProps) => {
           <Nav
             isCollapsed={isCollapsed}
             links={[
+              // {
+              //   title: 'Analytics',
+              //   icon: LayoutGrid,
+              //   variant: 'default',
+              //   href: NAVIGATION.DASHBOARD_PROJECT.HOME.replace(
+              //     '{id}',
+              //     id as string
+              //   )
+              // },
               {
-                title: 'Projects',
-                icon: LayoutGrid,
+                title: 'Workflow',
+                icon: WorkflowIcon,
                 variant: 'default',
-                href: NAVIGATION.HOME
+                href: NAVIGATION.DASHBOARD_PROJECT.WORKFLOW.HOME.replace(
+                  '{projectId}',
+                  id as string
+                )
               },
               // {
-              //   title: 'Playground',
-              //   icon: PlayIcon,
+              //   title: 'Prompts',
+              //   icon: NotebookTextIcon,
               //   variant: 'ghost',
-              //   href: NAVIGATION.PLAYGROUND
+              //   href: NAVIGATION.DASHBOARD_PROJECT.PROMPTS.HOME.replace(
+              //     '{id}',
+              //     id as string
+              //   )
               // },
-              // {
-              //   title: 'Fine tune',
-              //   icon: ZapIcon,
-              //   variant: 'ghost',
-              //   href: NAVIGATION.FINE_TUNE
-              // },
-              {
-                title: 'Dataset',
-                icon: DatabaseIcon,
-                variant: 'ghost',
-                href: NAVIGATION.DATA_STORE.HOME
-              },
               {
                 title: 'Settings',
                 icon: Settings,
                 variant: 'ghost',
-                href: NAVIGATION.SETTINGS
+                href: NAVIGATION.DASHBOARD_PROJECT.SETTINGS.replace(
+                  '{id}',
+                  id as string
+                )
               }
             ]}
           />

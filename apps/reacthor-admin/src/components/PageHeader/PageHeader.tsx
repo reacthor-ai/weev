@@ -1,8 +1,15 @@
 import { Separator } from '@/components/ui/separator'
 import { ReactNode } from 'react'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbSeparator
+} from '@/components/ui/breadcrumb'
 
 type PageHeaderProps = {
-  title: string
+  title: string | string[]
   children: ReactNode
 }
 
@@ -11,11 +18,17 @@ export const PageHeader = (props: PageHeaderProps) => {
   return (
     <div className="h-screen">
       <div className="flex items-center justify-between px-6 py-2.5">
-        <div className="flex flex-row items-center">
-          <div>
-            <h1 className="text-2xl">{title}</h1>
-          </div>
-        </div>
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>
+              <p>Reacthor</p>
+            </BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbLink href="/">{title}</BreadcrumbLink>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
       </div>
       <Separator />
 

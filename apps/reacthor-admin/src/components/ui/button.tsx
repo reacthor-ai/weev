@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { ReactNode } from 'react'
 import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 
@@ -10,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          'bg-[#000000] text-primary-foreground shadow hover:bg-primary/90',
+          'bg-[#17171c] text-primary-foreground shadow hover:bg-primary/90',
         destructive:
           'bg-destructive text-destructive-foreground shadow-sm hover:bg-destructive/90',
         outline:
@@ -54,8 +55,29 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = 'Button'
 
-export const ButtonDefault = ({ title, onClick }: {title: string, onClick?: any}) => (
-  <Button onClick={onClick} className={'bg-white text-black hover:bg-black hover:text-white'}>
+export const ButtonDefault = ({
+  title,
+  onClick,
+  icon,
+  className,
+  defaultStyles
+}: {
+  title: string
+  onClick?: any
+  icon?: ReactNode
+  className?: string
+  defaultStyles?: boolean
+}) => (
+  <Button
+    onClick={onClick}
+    className={cn(
+      defaultStyles
+        ? 'bg-white text-black hover:bg-black hover:text-white'
+        : '',
+      className
+    )}
+  >
+    {icon && icon}
     {title}
   </Button>
 )

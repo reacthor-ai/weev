@@ -1,0 +1,77 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id             String        @id @default(cuid())
+  name           String
+  clerkId        String        @unique
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+  organizationId String
+}
+
+model Organization {
+  id        String    @id @default(cuid())
+  title     String    @unique
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  projects  Project[]
+  users     User[]
+}
+
+model Project {
+  id             String             @id @default(cuid())
+  title          String
+  key            Key[]
+  prompts        PromptManagement[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+  organization   Organization?      @relation(fields: [organizationId], references: [id])
+  organizationId String?
+}
+
+model Key {
+  id          String   @id @default(cuid())
+  accessToken String   @unique // thor_sk_secretkey
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  project     Project? @relation(fields: [projectId], references: [id])
+  projectId   String?
+}
+
+model PromptManagement {
+  id        String   @id @default(cuid())
+  title     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  template  Json?
+  project   Project? @relation(fields: [projectId], references: [id])
+  projectId String?
+}
+
+// model Folder {
+//   id             String        @id @default(cuid())
+//   title          String
+//   type           FolderType
+//   createdAt      DateTime      @default(now())
+//   updatedAt      DateTime      @updatedAt
+//   files          File[]
+//   organization   Organization? @relation(fields: [organizationId], references: [id])
+//   organizationId String?
+// }
+//
+// model File {
+//   id        String   @id @default(cuid())
+//   title     String
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+//   folder    Folder?  @relation(fields: [folderId], references: [id])
+//   folderId  String?
+// }

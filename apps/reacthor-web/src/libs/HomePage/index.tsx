@@ -13,7 +13,7 @@ import Image from 'next/image'
 import Features from '@/libs/HomePage/features'
 import { Footer } from '@/libs/HomePage/Footer'
 
-const images = [logo1, logo2, logo3, logo4, logo5, logo6]
+const images = [logo1, logo2, logo3, logo4]
 
 export default function HomePageV1() {
   return (
@@ -42,10 +42,9 @@ export default function HomePageV1() {
             </Avatar>
           </div>
           <p className="max-w-lg mb-8 mx-auto text-[#888]">
-            Based in APAC covering (Singapore, Thailand,
-            Indonesia, Australia, and Malaysia) helping both large and small
-            companies integrate new Generative AI tools into their existing
-            systems or develop new ones.
+            Based in APAC covering (Singapore, Thailand, Indonesia, Australia,
+            and Malaysia) helping both large and small companies integrate new
+            Generative AI tools into their existing systems or develop new ones.
           </p>
         </div>
         <div className="flex space-x-4 mt-8">
@@ -63,27 +62,27 @@ export default function HomePageV1() {
       </header>
 
       {/*trusted by*/}
-      <div className="mx-4">
-        <header className="flex flex-col pb-8 items-center justify-center text-center">
-          <div className="bg-[#0e0e0e] text-[#f6f6f6] p-8 rounded-lg text-center">
-            <p className="mb-3">Our Credentials</p>
-            <div className={'flex'}>
-              {images.map((image, key) => {
-                return (
-                  <Image
-                    key={key}
-                    className="pr-4 rounded-full"
-                    src={image}
-                    width={50}
-                    height={50}
-                    alt={'logo'}
-                  />
-                )
-              })}
-            </div>
-          </div>
-        </header>
-      </div>
+      {/*<div className="mx-4">*/}
+      {/*  <header className="flex flex-col pb-8 items-center justify-center text-center">*/}
+      {/*    <div className="bg-[#0e0e0e] text-[#f6f6f6] p-8 rounded-lg text-center">*/}
+      {/*      <p className="mb-3">Our Credentials</p>*/}
+      {/*      <div className={'flex'}>*/}
+      {/*        {images.map((image, key) => {*/}
+      {/*          return (*/}
+      {/*            <Image*/}
+      {/*              key={key}*/}
+      {/*              className="pr-4 rounded-full"*/}
+      {/*              src={image}*/}
+      {/*              width={50}*/}
+      {/*              height={50}*/}
+      {/*              alt={'logo'}*/}
+      {/*            />*/}
+      {/*          )*/}
+      {/*        })}*/}
+      {/*      </div>*/}
+      {/*    </div>*/}
+      {/*  </header>*/}
+      {/*</div>*/}
 
       {/* WHAT WE DO */}
       <Features />

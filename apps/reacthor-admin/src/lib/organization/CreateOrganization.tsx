@@ -6,10 +6,17 @@ import { useState } from 'react'
 import { useCreateUserAtom } from '@/store/user/create'
 import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 export const CreateOrganization = () => {
+  const clerkSession = useUser()
+  const userId = clerkSession.user?.id
   const [title, setTitle] = useState<string>('')
+  const [username, setUsername] = useState<string>('')
   const router = useRouter()
+
+  const isDisabled = () => username.length <= 0 && title.length <= 0
+
   const [{ mutate: createUser, isPending }] = useCreateUserAtom()
 
   return (
@@ -31,13 +38,33 @@ export const CreateOrganization = () => {
                   onChange={e => setTitle(e.target.value)}
                 />
               </div>
+              <div>
+                <label
+                  className="block text-sm font-medium pb-2"
+                  htmlFor="product-name"
+                >
+                  UserName *
+                </label>
+                <Input
+                  placeholder="Please enter a username or name"
+                  onChange={e => setUsername(e.target.value)}
+                />
+              </div>
               <Button
-                disabled={isPending}
-                onClick={() => createUser({ organizationTitle: title }, {
-                  onSettled: () => {
-                    return router.refresh()
-                  }
-                })}
+                disabled={isPending || isDisabled()}
+                onClick={() =>
+                  createUser(
+                    {
+                      organizationTitle: title,
+                      user: { name: username, clerkId: userId ?? '' }
+                    },
+                    {
+                      onSettled: () => {
+                        return router.refresh()
+                      }
+                    }
+                  )
+                }
                 className="bg-white text-black hover:bg-black hover:text-white"
               >
                 {isPending ? (

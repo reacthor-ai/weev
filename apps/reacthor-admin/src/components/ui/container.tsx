@@ -11,22 +11,15 @@ export interface ContainerProps
 
 const Container = React.forwardRef<HTMLDivElement, ContainerProps>(
   ({ className, children, type = 'default', ...props }, ref) => {
-
     const styles = {
-      'default': 'bg-[#000000] h-screen text-white',
-      'app-container': 'mx-6 mt-4 h-screen scroll-smooth focus:scroll-auto overflow-auto',
-      'account': ''
+      default: 'h-screen flex flex-col bg-[#17171c] text-white',
+      'app-container':
+        'mx-6 mt-4 h-screen scroll-smooth focus:scroll-auto overflow-auto',
+      account: ''
     } as Record<NonNullable<ContainerProps['type']>, string>
 
     return (
-      <div
-        className={cn(
-          styles[type],
-          className
-        )}
-        ref={ref}
-        {...props}
-      >
+      <div className={cn(styles[type], className)} ref={ref} {...props}>
         {children}
       </div>
     )

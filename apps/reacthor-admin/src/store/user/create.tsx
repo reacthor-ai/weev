@@ -2,14 +2,17 @@ import { atomWithMutation } from 'jotai-tanstack-query'
 import { useAtom } from 'jotai'
 import { REACTHOR_API_ROUTES } from '@/shared-utils/constant/navigation'
 import { ERROR_MESSAGES } from '@/store/types'
-import { CreateUserParams } from '@/db/user'
+import { User } from '@prisma/client'
 
-type CreateUserActionAtomParams = CreateUserParams
+type CreateUserActionAtomParams = {
+  user: Pick<User, 'clerkId' | 'name'>
+  organizationTitle: string
+}
 
 export const CreateUserAtom = atomWithMutation(() => ({
   mutationKey: ['CreateUserAtom'],
   mutationFn: async (params: CreateUserActionAtomParams) => {
-    const body = JSON.stringify(params);
+    const body = JSON.stringify(params)
     try {
       const response = await fetch(REACTHOR_API_ROUTES.CREATE_USER, {
         method: 'POST',
