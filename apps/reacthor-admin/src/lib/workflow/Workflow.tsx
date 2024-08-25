@@ -13,9 +13,9 @@ import { WorkflowContainer } from './WorkflowMenu'
 import {
   BookDashedIcon,
   BotIcon,
-  CircleFadingPlusIcon,
   DatabaseIcon,
-  HammerIcon, NetworkIcon,
+  HammerIcon,
+  NetworkIcon,
   SatelliteDishIcon,
   SettingsIcon
 } from 'lucide-react'
@@ -28,6 +28,8 @@ import {
   WorkflowToolsComponents
 } from '@/lib/workflow/WorkflowMenu/Container/Components/Components'
 import { GenericPromptNode } from '@/lib/workflow/nodes/prompts/GenericPrompt'
+import { InternalGeneralTool } from '@/lib/workflow/nodes/tools/InternalGeneralTool'
+import { ChatAgentComponent } from '@/lib/workflow/nodes/agents/ChatAgentComponent/ChatAgentComponent'
 
 const initBgColor = '#27272a'
 
@@ -37,7 +39,9 @@ const snapGrid: [number, number] = [20, 20]
 const defaultViewport = { x: 0, y: 0, zoom: 1.5 }
 
 const nodeTypes = {
-  promptNode: GenericPromptNode
+  promptNode: GenericPromptNode,
+  internalGeneralTool: InternalGeneralTool,
+  chatAgentComponent: ChatAgentComponent
 }
 
 export const Workflow = () => {
@@ -68,10 +72,37 @@ export const Workflow = () => {
           onDeleteRole: (index: number) => {}
         },
         position: { x: 300, y: 50 }
+      },
+      {
+        id: '2',
+        type: 'internalGeneralTool',
+        data: { label: 'Internal General Tool' },
+        position: { x: 600, y: 50 }
+      },
+      {
+        id: '3',
+        type: 'chatAgentComponent',
+        data: { label: 'Chat Agent', type: 'ChatAgentComponent' },
+        position: { x: 300, y: 250 }
       }
     ])
 
-    setEdges([{}])
+    setEdges([
+      {
+        id: 'e1-2',
+        source: '1',
+        target: '2',
+        animated: true,
+        style: { stroke: initBgColor }
+      },
+      {
+        id: 'e1-3',
+        source: '1',
+        target: '3',
+        animated: true,
+        style: { stroke: initBgColor }
+      }
+    ])
   }, [])
 
   const onConnect = useCallback(

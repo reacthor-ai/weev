@@ -6,10 +6,6 @@ import logo1 from '../../../public/industry-logo/2c2p_logo.jpeg'
 import logo2 from '../../../public/industry-logo/brikl_logo.jpeg'
 import logo3 from '../../../public/industry-logo/kavxcorp_logo.jpeg'
 import logo4 from '../../../public/industry-logo/listenfield_logo.jpeg'
-import logo5 from '../../../public/industry-logo/reisedigital_logo.jpeg'
-import logo6 from '../../../public/industry-logo/agoda_logo.jpeg'
-
-import Image from 'next/image'
 import Features from '@/libs/HomePage/features'
 import { Footer } from '@/libs/HomePage/Footer'
 
