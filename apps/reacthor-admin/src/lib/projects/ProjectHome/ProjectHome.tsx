@@ -27,7 +27,7 @@ export const ProjectHome = () => {
   const userId = clerkSession.user?.id
   const [{ isPending, data }] = useGetUserAtom()
   const router = useRouter()
-  const [clerkId, updateClerkId] = updateClerkIdAtom()
+  const [_, updateClerkId] = updateClerkIdAtom()
   const [{ mutate: createProject, isPending: isCreateProjectLoader }] =
     useCreateProjectAtom()
   const [projectName, setProjectName] = useState('')

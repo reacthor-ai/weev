@@ -1,7 +1,7 @@
 'use client'
 
-import { Workflow } from '@/lib/workflow'
+import { FlowProvider } from '@/lib/workflow/Workflow'
 
 export default function DashboardWorkflowPage() {
-  return <Workflow />
+  return <FlowProvider />
 }

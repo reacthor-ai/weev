@@ -1,0 +1,1 @@
+export { MemoryConfiguration } from './Memory'

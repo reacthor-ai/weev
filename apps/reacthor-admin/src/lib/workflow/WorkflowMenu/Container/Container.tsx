@@ -41,7 +41,7 @@ export const WorkflowContainer = (props: WorkflowComponentContainerProps) => {
             minSize={20}
             collapsedSize={6}
             maxSize={60}
-            className="w-[500px] p-4"
+            className="w-[500px] mt-4"
           >
             {children}
           </ResizablePanel>

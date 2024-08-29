@@ -1,7 +1,9 @@
-import React, { useState } from 'react'
-import { Button } from '@/components/ui/button'
+'use client'
+
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import { Button, ButtonDefault } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Handle, Position } from '@xyflow/react'
+import { EdgeProps, Handle, Position } from '@xyflow/react'
 import {
   Select,
   SelectContent,
@@ -9,203 +11,362 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select'
+import { XIcon } from 'lucide-react'
+import { useNodeId } from '@/hooks/useNodeId'
+import { useAgents, useUpdateAgent } from '@/store/workflow/agents/agents'
 
-interface ChatInput {
-  key: string
-  value: string
+interface StateUpdate {
+  name: string
+  _state: Record<string, boolean | string | number>
+  tools: any[]
 }
 
-export const ChatAgentComponent: React.FC<{
-  type: 'ChatAgentComponent' | 'ToolsAgentComponent'
-}> = ({ type }) => {
-  const [name, setName] = useState<string>('Greeter')
-  const [agentType, setAgentType] = useState<string>('chat')
+interface ChatAgentComponentProps {
+  type: 'tools' | 'general'
+}
 
-  const [chatInputs, setChatInputs] = useState<ChatInput[]>([
-    { key: 'agent_name', value: 'Greeter' },
-    { key: 'company_name', value: 'Reacthor' }
-  ])
-
-  const [llmType, setLlmType] = useState('open-ai')
-
-  const [stateUpdates, setStateUpdates] = useState([
+export const ChatAgentComponent: React.FC<
+  EdgeProps & ChatAgentComponentProps
+> = ({ id, type }) => {
+  const chatAgentToPromptId = useNodeId(id)
+  const toolsAgentToPromptId = useNodeId(id)
+  const agentToGraphId = useNodeId(id)
+  const agents = useAgents()
+  const [llmType, setLlmType] = useState('ChatOpenAI')
+  const [stateUpdates, setStateUpdates] = useState<StateUpdate[]>([
     {
-      name: 'UpdateGreetingNode',
-      key: 'greet',
-      value: true
+      name: 'UpdateAgentNodeName',
+      _state: {
+        greet: true
+      },
+      tools: []
     }
   ])
 
-  const handleNameChange = (newName: string) => {
-    setName(newName)
-  }
+  const updateAgent = useUpdateAgent()
+  const newType =
+    type === 'tools' ? 'ToolsAgentComponent' : 'ChatAgentComponent'
 
-  const handleAgentTypeChange = (newType: string) => {
-    setAgentType(newType)
-  }
+  useEffect(() => {
+    const agentExists = agents.some(agent => agent.name === id)
 
-  const handleAddStateUpdate = () => {
-    setStateUpdates([
-      ...(stateUpdates as any),
-      { name: '', key: '', value: '' }
-    ])
-  }
+    if (!agentExists) {
+      const defaultAgent = {
+        id,
+        name: id,
+        type: newType,
+        llm: {
+          type: llmType,
+          model: 'gpt-4o-mini',
+          max_retries: 1
+        },
+        state_updates: stateUpdates
+      }
+      updateAgent(defaultAgent as any)
+    }
+  }, [id, agents, llmType, stateUpdates, updateAgent])
 
-  const handleStateUpdateChange = (
-    index: number,
-    field: string,
-    value: any
-  ) => {
-    const updatedStateUpdates = stateUpdates.map((update, i) =>
-      i === index ? { ...update, [field]: value } : update
+  const handleUpdateAgent = useCallback(() => {
+    updateAgent({
+      name: id,
+      type: newType,
+      llm: {
+        type: llmType as any,
+        model: 'gpt-4o-mini',
+        max_retries: 2
+      },
+      state_updates: stateUpdates
+    })
+  }, [id, llmType, stateUpdates, updateAgent, agents])
+
+  const handleAddStateUpdate = useCallback(() => {
+    setStateUpdates(prev => [...prev, { name: '', _state: {}, tools: [] }])
+  }, [])
+
+  const handleStateUpdateChange = useCallback(
+    (index: number, field: string, value: any) => {
+      setStateUpdates(prev =>
+        prev.map((update, i) =>
+          i === index ? { ...update, [field]: value } : update
+        )
+      )
+    },
+    []
+  )
+
+  const handleStateKeyChange = useCallback(
+    (index: number, key: string, value: boolean | string | number) => {
+      setStateUpdates(prev =>
+        prev.map((update, i) =>
+          i === index
+            ? { ...update, _state: { ...update._state, [key]: value } }
+            : update
+        )
+      )
+    },
+    []
+  )
+
+  const handleAddStateKey = useCallback((index: number) => {
+    setStateUpdates(prev =>
+      prev.map((update, i) =>
+        i === index
+          ? {
+              ...update,
+              _state: {
+                ...update._state,
+                [`newKey${Object.keys(update._state).length}`]: true
+              }
+            }
+          : update
+      )
     )
-    setStateUpdates(updatedStateUpdates)
-  }
+  }, [])
 
-  const handleDeleteChatInput = (index: number) => {
-    setChatInputs(prev => prev.filter((_, i) => i !== index))
-  }
+  const handleDeleteStateKey = useCallback(
+    (updateIndex: number, keyToDelete: string) => {
+      setStateUpdates(prev =>
+        prev.map((update, i) =>
+          i === updateIndex
+            ? {
+                ...update,
+                _state: Object.fromEntries(
+                  Object.entries(update._state).filter(
+                    ([key]) => key !== keyToDelete
+                  )
+                )
+              }
+            : update
+        )
+      )
+    },
+    []
+  )
+
+  const handleDeleteStateUpdate = useCallback((index: number) => {
+    setStateUpdates(prev => prev.filter((_, i) => i !== index))
+  }, [])
+
+  const title = useMemo(
+    () => ({
+      tools: 'Tools Agent Node',
+      general: 'General Agent Node'
+    }),
+    []
+  )
 
   return (
     <div className="p-4 rounded-md bg-[#27272a] text-white shadow-md">
-      <Handle type="target" position={Position.Top} />
-      <h3 className="text-lg font-semibold mb-2">Agent Node</h3>
+      <h3 className="text-lg font-semibold mb-4">{title[type]}</h3>
 
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Agent Name</label>
-        <Input
-          value={name}
-          onChange={e => handleNameChange(e.target.value)}
-          className="w-full bg-[#1e1e23] text-white"
-          placeholder="Enter agent name"
+      <div className="mb-4 p-4 rounded bg-[#3b3b3e]">
+        <label className="block text-sm font-medium mb-1">LLM Type</label>
+        <Select
+          value={llmType}
+          onValueChange={value => {
+            setLlmType(value)
+            handleUpdateAgent()
+          }}
+        >
+          <SelectTrigger className="w-full bg-[#1e1e23] text-white">
+            <SelectValue placeholder="Select LLM Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="ChatOpenAI">OpenAI</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      <div className="flex align-center justify-between items-center mb-4">
+        <h4 className="text-md font-semibold mb-2">State Updates</h4>
+        <ButtonDefault
+          title="Add State Update"
+          onClick={() => {
+            handleAddStateUpdate()
+            handleUpdateAgent()
+          }}
+          className="rounded-full flex items-center"
+          icon={
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="h-5 w-5 mr-2"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M12 4v16m8-8H4"
+              />
+            </svg>
+          }
         />
       </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">Agent Type</label>
-        <Select value={agentType} onValueChange={handleAgentTypeChange}>
-          <SelectTrigger className="bg-[#1e1e23] text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="chat">Chat</SelectItem>
-            <SelectItem value="task">Task</SelectItem>
-            <SelectItem value="analysis">Analysis</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="mb-4">
-        <label className="block text-sm font-medium mb-1">LLM Type</label>
-        <Select value={llmType} onValueChange={setLlmType}>
-          <SelectTrigger className="bg-[#1e1e23] text-white">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="open-ai">OpenAI</SelectItem>
-            {/* Add other LLM options here */}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {chatInputs.map((input, index) => (
-        <div key={index} className="flex items-center mb-2">
-          <Input
-            value={input.key}
-            onChange={e =>
-              setChatInputs(prev =>
-                prev.map((item, i) =>
-                  i === index ? { ...item, key: e.target.value } : item
-                )
-              )
-            }
-            className="w-1/3 mr-2 bg-[#1e1e23] text-white"
-            placeholder="Key"
-          />
-          <Input
-            value={input.value}
-            onChange={e =>
-              setChatInputs(prev =>
-                prev.map((item, i) =>
-                  i === index ? { ...item, value: e.target.value } : item
-                )
-              )
-            }
-            className="w-1/3 mr-2 bg-[#1e1e23] text-white"
-            placeholder="Value"
-          />
-          <Button
-            onClick={() => handleDeleteChatInput(index)}
-            className="bg-red-500 hover:bg-red-600"
-          >
-            Delete
-          </Button>
-        </div>
-      ))}
-
-      <Button
-        onClick={() => setChatInputs([...chatInputs, { key: '', value: '' }])}
-      >
-        Add Input
-      </Button>
-
       <div className="mt-4">
-        <h4 className="text-md font-semibold mb-2">State Updates</h4>
         {stateUpdates.map((update, index) => (
-          <div key={index} className="flex items-center mb-2">
-            <Input
-              value={update.name}
-              onChange={e =>
-                handleStateUpdateChange(index, 'name', e.target.value)
-              }
-              className="w-1/3 mr-2 bg-[#1e1e23] text-white"
-              placeholder="Name"
-            />
-            <Input
-              value={update.key}
-              onChange={e =>
-                handleStateUpdateChange(index, 'key', e.target.value)
-              }
-              className="w-1/3 mr-2 bg-[#1e1e23] text-white"
-              placeholder="Key"
-            />
-            <Input
-              value={update.value as unknown as string}
-              onChange={e =>
-                handleStateUpdateChange(index, 'value', e.target.value)
-              }
-              className="w-1/3 bg-[#1e1e23] text-white"
-              placeholder="Value"
-            />
+          <div key={index} className="mb-4 p-4 rounded bg-[#3b3b3e]">
+            <div className="flex align-center justify-between items-center mb-4">
+              <h4 className="text-md font-semibold mb-2">State Key</h4>
+              <ButtonDefault
+                title="Add State Key"
+                onClick={() => {
+                  handleAddStateKey(index)
+                  handleUpdateAgent()
+                }}
+                className="rounded-full flex items-center mt-2"
+                icon={
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    className="h-5 w-5 mr-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                }
+              />
+            </div>
+            <div className="flex items-center mb-2">
+              <Input
+                value={update.name}
+                onChange={e =>
+                  handleStateUpdateChange(index, 'name', e.target.value)
+                }
+                onBlur={handleUpdateAgent}
+                className="w-full mr-2 bg-[#1e1e23] text-white"
+                placeholder="State Update Name"
+              />
+              <Button
+                className="text-white bg-[#e11d48] hover:bg-[#be123c] p-2 rounded"
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  handleDeleteStateUpdate(index)
+                  handleUpdateAgent()
+                }}
+              >
+                <XIcon className="h-4 w-4" color="white" />
+              </Button>
+            </div>
+            {Object.entries(update._state).map(([key, value], stateIndex) => (
+              <div key={stateIndex} className="flex items-center mb-2">
+                <Input
+                  value={key}
+                  onChange={e => {
+                    const newState = { ...update._state }
+                    delete newState[key]
+                    newState[e.target.value] = value
+                    handleStateUpdateChange(index, '_state', newState)
+                  }}
+                  onBlur={handleUpdateAgent}
+                  className="w-1/3 mr-2 bg-[#1e1e23] text-white"
+                  placeholder="Key"
+                />
+                <Select
+                  value={typeof value}
+                  onValueChange={newType => {
+                    let newValue: boolean | string | number = value
+                    if (newType === 'boolean') newValue = Boolean(value)
+                    else if (newType === 'number') newValue = Number(value)
+                    else newValue = String(value)
+                    handleStateKeyChange(index, key, newValue)
+                    handleUpdateAgent()
+                  }}
+                >
+                  <SelectTrigger className="w-1/3 mr-2 bg-[#1e1e23] text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="boolean">Boolean</SelectItem>
+                    <SelectItem value="string">String</SelectItem>
+                    <SelectItem value="number">Number</SelectItem>
+                  </SelectContent>
+                </Select>
+                {typeof value === 'boolean' ? (
+                  <Select
+                    value={String(value)}
+                    onValueChange={newValue => {
+                      handleStateKeyChange(index, key, newValue === 'true')
+                      handleUpdateAgent()
+                    }}
+                  >
+                    <SelectTrigger className="w-1/3 mr-2 bg-[#1e1e23] text-white">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="true">True</SelectItem>
+                      <SelectItem value="false">False</SelectItem>
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <Input
+                    value={String(value)}
+                    onChange={e => {
+                      const newValue: boolean | string | number =
+                        typeof value === 'number'
+                          ? Number(e.target.value)
+                          : e.target.value
+                      handleStateKeyChange(index, key, newValue)
+                    }}
+                    onBlur={handleUpdateAgent}
+                    className="w-1/3 mr-2 bg-[#1e1e23] text-white"
+                    placeholder="Value"
+                  />
+                )}
+                <Button
+                  className="text-white bg-[#e11d48] hover:bg-[#be123c] p-2 rounded"
+                  variant="outline"
+                  size="icon"
+                  onClick={() => {
+                    handleDeleteStateKey(index, key)
+                    handleUpdateAgent()
+                  }}
+                >
+                  <XIcon className="h-4 w-4" color="white" />
+                </Button>
+              </div>
+            ))}
           </div>
         ))}
-        <Button onClick={handleAddStateUpdate}>Add State Update</Button>
       </div>
 
       <div className="absolute top-5 left-full flex flex-col items-center transform translate-x-3 space-y-4">
         <div className="flex items-center bg-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors">
           <Handle
-            type="target"
+            type="source"
             position={Position.Right}
-            id="promptConnector"
+            id={'prompt_' + chatAgentToPromptId}
             style={{
               background: '#f97316',
               borderRadius: '50%',
               height: '12px',
               width: '12px'
             }}
+            isConnectable
             className="relative"
           />
           <span className="ml-2 mr-2 text-sm text-white font-semibold">
             Prompt
           </span>
         </div>
-        {type === 'ToolsAgentComponent' && (
+      </div>
+
+      <div className="absolute top-16 mt-4 left-full flex flex-col items-center transform translate-x-3 space-y-4">
+        {type === 'tools' && (
           <div className="flex items-center bg-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors">
             <Handle
-              type="target"
+              type="source"
+              isConnectable
               position={Position.Right}
-              id="toolConnector"
+              id={'tool_' + toolsAgentToPromptId}
               style={{
                 background: '#22c55e',
                 borderRadius: '50%',
@@ -219,6 +380,27 @@ export const ChatAgentComponent: React.FC<{
             </span>
           </div>
         )}
+      </div>
+
+      <div className="absolute mr-6 top-5 right-full flex flex-col items-center transform translate-x-3 space-y-4">
+        <div className="flex items-center bg-gray-800 p-2 rounded-full shadow-lg hover:bg-gray-700 transition-colors">
+          <Handle
+            type="source"
+            position={Position.Left}
+            id={'agentgraph_' + agentToGraphId}
+            style={{
+              background: '#008080',
+              borderRadius: '50%',
+              height: '12px',
+              width: '12px'
+            }}
+            isConnectable
+            className="relative"
+          />
+          <span className="ml-2 mr-2 text-sm text-white font-semibold">
+            Graph
+          </span>
+        </div>
       </div>
     </div>
   )
