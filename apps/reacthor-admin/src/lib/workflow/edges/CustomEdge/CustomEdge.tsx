@@ -6,8 +6,8 @@ import {
   getBezierPath,
   useReactFlow
 } from '@xyflow/react'
-import { useRemoveAgentAtom } from '@/store/workflow/agents/agents'
-import { getGraphInfo, getSourceType, isAgent } from '@/lib/workflow/utils'
+import { getGraphInfo } from '@/lib/workflow/utils'
+import { useWorkflow } from '@/store/workflow/graph/graph'
 
 export function CustomEdge({
   id,
@@ -30,23 +30,26 @@ export function CustomEdge({
     targetPosition
   })
 
-  const edges = getEdges()
+  const { removeWorkflowConnection } = useWorkflow()
 
-  const removeAgentAtom = useRemoveAgentAtom()
+  const removeExclusiveConnections = (source: string, target: string) => {
+    const { currentAgent, currentGraphId, verifyAgentExist, verifyGraphExist } =
+      getGraphInfo(source, target)
 
-  const removeExclusiveAgent = (source: string, target: string) => {
-    const { currentAgent: id } = getGraphInfo(source, target)
-    if (!isAgent.includes(getSourceType(id))) return
-    removeAgentAtom(id)
+    // don't run if it's there is no agent and graph in the source or target
+    if (!verifyAgentExist && !verifyGraphExist) return
+
+    return removeWorkflowConnection(currentAgent, currentGraphId)
   }
 
   const onEdgeClick = () => {
     setEdges(edges =>
-      edges.filter(edge => {
-        console.log({ edge })
-        removeExclusiveAgent(edge.source, edge.target)
+      edges.filter(({ source, target, id: edgeId }) => {
+        console.log({ id })
+        // remove: graph connections
+        removeExclusiveConnections(source, target)
 
-        return edge.id !== id
+        return edgeId !== id
       })
     )
   }

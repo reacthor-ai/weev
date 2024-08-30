@@ -1,30 +1,10 @@
 import { EdgeProps, Handle, Position } from '@xyflow/react'
 import { useNodeId } from '@/hooks/useNodeId'
-import { useCallback, useEffect } from 'react'
-import {
-  useSetUpdateWorkflowAtom,
-  WorkflowAtomParams
-} from '@/store/workflow/graph/graph'
 import { GitGraphIcon } from 'lucide-react'
 
 export const SupervisorGraph: React.FC<EdgeProps> = props => {
   const { id } = props
-
-  const setWorkflowGraph = useSetUpdateWorkflowAtom()
-
   const supervisorToChatAgentId = useNodeId(id)
-
-  const updateWorkflow = useCallback(() => {
-    const newWorkflow = {
-      name: id
-    } as WorkflowAtomParams
-
-    setWorkflowGraph(newWorkflow)
-  }, [id, setWorkflowGraph])
-
-  useEffect(() => {
-    updateWorkflow()
-  }, [])
 
   return (
     <div className="border border-gray-700 hover:shadow-lg w-full rounded-lg p-5 bg-[#27272a] text-white">

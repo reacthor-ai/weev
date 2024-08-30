@@ -2,9 +2,11 @@ import '@xyflow/react/dist/style.css'
 import React, { ReactNode, useCallback, useRef, useState } from 'react'
 import {
   addEdge,
+  applyNodeChanges,
   Background,
   type Connection,
   Controls,
+  NodeChange,
   ReactFlow,
   ReactFlowProvider,
   useEdgesState,
@@ -44,13 +46,14 @@ import { useDndAtom } from '@/store/dnd/create'
 import { CustomEdge } from '@/lib/workflow/edges/CustomEdge'
 import { getId } from '@/utils/getId'
 import { SupervisorGraph } from '@/lib/workflow/nodes/graph/SupervisorGraph'
+import { useWorkflow } from '@/store/workflow/graph/graph'
 import {
-  useSetUpdateWorkflowAtom,
-  useValueWorkflowAtom,
-  WorkflowAtomParams
-} from '@/store/workflow/graph/graph'
-import { useAgents } from '@/store/workflow/agents/agents'
-import { getGraphInfo, getSourceType } from '@/lib/workflow/utils'
+  getGraphInfo,
+  getSourceType,
+  isAgent,
+  SUPERVISOR_GRAPH_ID
+} from '@/lib/workflow/utils'
+import { useRemoveAgent } from '@/store/workflow/agents/agents'
 
 const connectionLineStyle = { stroke: 'white' }
 const snapGrid: [number, number] = [20, 20]
@@ -102,7 +105,7 @@ export const FlowProvider = () => {
 
 export const Workflow = () => {
   const reactFlowWrapper = useRef(null)
-  const [nodes, setNodes, onNodesChange] = useNodesState<any>([])
+  const [nodes, setNodes] = useNodesState<any>([])
   const [edges, setEdges, onEdgesChange] = useEdgesState<any>([])
   const { screenToFlowPosition } = useReactFlow()
   const [close, setClose] = useState({
@@ -112,9 +115,10 @@ export const Workflow = () => {
 
   // atoms
   const [type] = useDndAtom()
-  const workflow = useValueWorkflowAtom()
-  const setWorkflowGraph = useSetUpdateWorkflowAtom()
-  const agents = useAgents()
+  const { workflows, addOrUpdateWorkflow, removeWorkflowFromGraph } =
+    useWorkflow()
+
+  const removeAgent = useRemoveAgent()
 
   const isConnectionRestricted = (
     source: string | null,
@@ -128,67 +132,36 @@ export const Workflow = () => {
   }
 
   const updateWorkflowGraph = (source: string, target: string) => {
-    if (!workflow || workflow.length <= 0) return
-
     const { currentAgent, currentGraphId } = getGraphInfo(source, target)
-    const currentWorkflow = workflow.find(
-      ({ name: id }) => id === currentGraphId
-    )
 
     if (
-      !currentWorkflow ||
       ['conditionalRouter', 'promptNode', 'internalGeneralTool'].includes(
         getSourceType(currentAgent)
       )
     ) {
       return
     }
-    const updateWorkflowGraph = (source: string, target: string) => {
-      if (!workflow || workflow.length <= 0) return
 
-      const { currentAgent, currentGraphId } = getGraphInfo(source, target)
-      const currentWorkflow = workflow.find(
-        ({ name: id }) => id === currentGraphId
-      )
+    const currentWorkflow = workflows.find(w => w.name === currentGraphId)
+    let newConnections: [string, string][]
 
-      if (
-        !currentWorkflow ||
-        ['conditionalRouter', 'promptNode', 'internalGeneralTool'].includes(
-          getSourceType(currentAgent)
-        )
-      ) {
-        return
-      }
-
-      const updatedWorkflow: WorkflowAtomParams = {
-        name: currentWorkflow.name,
-        connections: []
-      }
-
-      if (
-        !currentWorkflow.connections ||
-        currentWorkflow.connections.length === 0
-      ) {
-        // If there are no existing connections, create a simple workflow
-        updatedWorkflow.connections = [
-          ['__start__', currentAgent],
-          [currentAgent, '__end__']
-        ]
-      } else {
-        // If there are existing connections, insert the new agent before __end__
-        const lastConnection =
-          currentWorkflow.connections[currentWorkflow.connections.length - 1]
-
-        updatedWorkflow.connections = [
-          ...currentWorkflow.connections.slice(0, -1),
-          [lastConnection![0], currentAgent],
-          [currentAgent, '__end__']
-        ]
-      }
-
-      console.log({ updatedWorkflow })
-      setWorkflowGraph(updatedWorkflow)
+    if (!currentWorkflow || currentWorkflow.connections!.length === 0) {
+      newConnections = [
+        ['__start__', currentAgent],
+        [currentAgent, '__end__']
+      ]
+    } else {
+      const lastNonEndIndex =
+        currentWorkflow.connections!.findIndex(conn => conn[1] === '__end__') -
+        1
+      newConnections = [
+        ...currentWorkflow.connections!.slice(0, lastNonEndIndex + 1),
+        [currentWorkflow.connections![lastNonEndIndex]![1], currentAgent],
+        [currentAgent, '__end__']
+      ]
     }
+
+    addOrUpdateWorkflow(currentGraphId, newConnections)
   }
 
   const onConnect = useCallback(
@@ -217,7 +190,7 @@ export const Workflow = () => {
 
       setEdges(eds => addEdge(params, eds))
     },
-    [nodes]
+    [nodes, edges]
   )
 
   const onDragOver = useCallback((event: any) => {
@@ -248,7 +221,28 @@ export const Workflow = () => {
     },
     [screenToFlowPosition, type]
   )
-  console.log({ workflow, edges, agents })
+
+  const onNodeChange = useCallback((changes: any) => {
+    const currentChanges = changes[0]
+    const type = (currentChanges as NodeChange<any>).type
+
+    if (type === 'remove' && 'id' in currentChanges) {
+      const isSupervisorGraph =
+        getSourceType(currentChanges.id) === SUPERVISOR_GRAPH_ID
+
+      const isValidAgent = isAgent.includes(getSourceType(currentChanges.id))
+
+      if (isSupervisorGraph) {
+        removeWorkflowFromGraph(currentChanges.id)
+      }
+
+      if (isValidAgent) {
+        removeAgent(currentChanges.id)
+      }
+    }
+    return setNodes(eds => applyNodeChanges(changes, eds))
+  }, [])
+
   return (
     <>
       <TopHeader title="Customer support workflow" />
@@ -327,7 +321,7 @@ export const Workflow = () => {
           <ReactFlow
             nodes={nodes}
             edges={edges}
-            onNodesChange={onNodesChange}
+            onNodesChange={onNodeChange}
             onEdgesChange={onEdgesChange}
             onDrop={onDrop}
             onDragOver={onDragOver}

@@ -24,8 +24,10 @@ export interface AgentGraphAtom {
 
 export const agentsAtom = atom<AgentGraphAtom[]>([])
 
-export const updateAgentsAtom = atom(
-  get => get(agentsAtom),
+export const getAgentsAtom = atom(get => get(agentsAtom))
+
+export const updateAgentAtom = atom(
+  null,
   (get, set, newAgent: AgentGraphAtom) => {
     const currentAgents = get(agentsAtom)
     const existingAgentIndex = currentAgents.findIndex(
@@ -33,7 +35,6 @@ export const updateAgentsAtom = atom(
     )
 
     if (existingAgentIndex !== -1) {
-      // Update existing agent
       set(
         agentsAtom,
         currentAgents.map((agent, index) =>
@@ -41,24 +42,19 @@ export const updateAgentsAtom = atom(
         )
       )
     } else {
-      // Add new agent
       set(agentsAtom, [...currentAgents, newAgent])
     }
   }
 )
 
-export const removeAgentsAtom = atom(
-  get => get(agentsAtom),
-  (get, set, agentId: string) => {
-    const currentAgents = get(agentsAtom)
+export const removeAgentAtom = atom(null, (get, set, agentId: string) => {
+  const currentAgents = get(agentsAtom)
+  set(
+    agentsAtom,
+    currentAgents.filter(agent => agent.name !== agentId)
+  )
+})
 
-    const updatedAgents = currentAgents.filter(agent => agent.name !== agentId)
-    set(agentsAtom, updatedAgents)
-  }
-)
-
-export const useRemoveAgentAtom = () => useSetAtom(removeAgentsAtom)
-
-export const useUpdateAgent = () => useSetAtom(updateAgentsAtom)
-
-export const useAgents = () => useAtomValue(agentsAtom)
+export const useAgents = () => useAtomValue(getAgentsAtom)
+export const useUpdateAgent = () => useSetAtom(updateAgentAtom)
+export const useRemoveAgent = () => useSetAtom(removeAgentAtom)

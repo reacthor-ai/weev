@@ -31,7 +31,11 @@ export const ChatAgentComponent: React.FC<
   const chatAgentToPromptId = useNodeId(id)
   const toolsAgentToPromptId = useNodeId(id)
   const agentToGraphId = useNodeId(id)
+
   const agents = useAgents()
+
+  const updateAgent = useUpdateAgent()
+
   const [llmType, setLlmType] = useState('ChatOpenAI')
   const [stateUpdates, setStateUpdates] = useState<StateUpdate[]>([
     {
@@ -43,7 +47,6 @@ export const ChatAgentComponent: React.FC<
     }
   ])
 
-  const updateAgent = useUpdateAgent()
   const newType =
     type === 'tools' ? 'ToolsAgentComponent' : 'ChatAgentComponent'
 
