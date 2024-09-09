@@ -4,6 +4,7 @@ import { ButtonDefault } from '@/components/ui/button'
 import { PlayIcon, RocketIcon } from '@radix-ui/react-icons'
 import { useAgents } from '@/store/workflow/agents/agents'
 import { useWorkflow } from '@/store/workflow/graph/graph'
+import { usePromptFormStates } from '@/store/workflow/prompt/prompt'
 
 type TopHeaderProps = {
   title: string
@@ -12,7 +13,9 @@ type TopHeaderProps = {
 export function TopHeader({ title }: TopHeaderProps) {
   const agents = useAgents()
   const { workflows } = useWorkflow()
-  console.log({ agents, workflows })
+  const promptFormState = usePromptFormStates()
+  console.log({ agents, workflows, promptFormState })
+
   return (
     <header className="p-[2rem] flex h-[52px] bg-[#17171c] items-center gap-4 border-b border-b-[#27272a] px-4 md:px-6">
       <div className="flex w-full items-center gap-4 md:ml-auto md:gap-2 lg:gap-4">

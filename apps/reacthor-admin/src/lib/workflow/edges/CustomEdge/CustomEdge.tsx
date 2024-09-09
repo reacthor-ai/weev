@@ -6,8 +6,9 @@ import {
   getBezierPath,
   useReactFlow
 } from '@xyflow/react'
-import { getGraphInfo } from '@/lib/workflow/utils'
+import { getAgentInfo, getGraphInfo } from '@/lib/workflow/utils'
 import { useWorkflow } from '@/store/workflow/graph/graph'
+import { useResetAgentPromptId } from '@/store/workflow/agents/agents'
 
 export function CustomEdge({
   id,
@@ -31,6 +32,7 @@ export function CustomEdge({
   })
 
   const { removeWorkflowConnection } = useWorkflow()
+  const resetAgentPromptId = useResetAgentPromptId()
 
   const removeExclusiveConnections = (source: string, target: string) => {
     const { currentAgent, currentGraphId, verifyAgentExist, verifyGraphExist } =
@@ -39,15 +41,28 @@ export function CustomEdge({
     // don't run if it's there is no agent and graph in the source or target
     if (!verifyAgentExist && !verifyGraphExist) return
 
-    return removeWorkflowConnection(currentAgent, currentGraphId)
+    removeWorkflowConnection(currentAgent, currentGraphId)
+  }
+
+  const removeAgentPromptConnections = (source: string, target: string) => {
+    const { currentAgent, verifyAgentExist, verifyPromptExist } = getAgentInfo(
+      source,
+      target
+    )
+    if (!verifyAgentExist && !verifyPromptExist) return
+    resetAgentPromptId(currentAgent)
   }
 
   const onEdgeClick = () => {
     setEdges(edges =>
       edges.filter(({ source, target, id: edgeId }) => {
-        console.log({ id })
-        // remove: graph connections
-        removeExclusiveConnections(source, target)
+        if (edgeId === id) {
+          // remove: graph connections
+          removeExclusiveConnections(source, target)
+
+          // remove: agent <-> prompt connections
+          removeAgentPromptConnections(source, target)
+        }
 
         return edgeId !== id
       })

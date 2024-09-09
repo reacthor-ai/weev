@@ -48,12 +48,23 @@ import { getId } from '@/utils/getId'
 import { SupervisorGraph } from '@/lib/workflow/nodes/graph/SupervisorGraph'
 import { useWorkflow } from '@/store/workflow/graph/graph'
 import {
+  getAgentInfo,
   getGraphInfo,
   getSourceType,
   isAgent,
+  PROMPT_ID,
   SUPERVISOR_GRAPH_ID
 } from '@/lib/workflow/utils'
-import { useRemoveAgent } from '@/store/workflow/agents/agents'
+import {
+  useCheckPromptIdExists,
+  useInitializeAgentNode,
+  useRemoveAgent,
+  useUpdateAgentPromptId
+} from '@/store/workflow/agents/agents'
+import {
+  useCreateAndSetPrompt,
+  useRemoveAgentPromptAndDeletePrompt
+} from '@/store/workflow/prompt/prompt'
 
 const connectionLineStyle = { stroke: 'white' }
 const snapGrid: [number, number] = [20, 20]
@@ -117,8 +128,14 @@ export const Workflow = () => {
   const [type] = useDndAtom()
   const { workflows, addOrUpdateWorkflow, removeWorkflowFromGraph } =
     useWorkflow()
-
   const removeAgent = useRemoveAgent()
+  const updateAgentPromptId = useUpdateAgentPromptId()
+  const removeAgentPromptAndDeletePrompt = useRemoveAgentPromptAndDeletePrompt()
+
+  const initializeAgentNode = useInitializeAgentNode()
+  const createAndSetPrompt = useCreateAndSetPrompt()
+
+  const checkPromptIdExists = useCheckPromptIdExists()
 
   const isConnectionRestricted = (
     source: string | null,
@@ -127,16 +144,22 @@ export const Workflow = () => {
     if (!source) return false
     const sourceType = getSourceType(source)
     const targetType = getSourceType(target)
-
+    console.log({
+      sourceType,
+      targetType,
+      dd: (connectionRestrictions as any)[sourceType]
+    })
     return (connectionRestrictions as any)[sourceType]?.includes(targetType)
   }
 
   const updateWorkflowGraph = (source: string, target: string) => {
     const { currentAgent, currentGraphId } = getGraphInfo(source, target)
-
     if (
       ['conditionalRouter', 'promptNode', 'internalGeneralTool'].includes(
         getSourceType(currentAgent)
+      ) ||
+      ['conditionalRouter', 'promptNode', 'internalGeneralTool'].includes(
+        getSourceType(currentGraphId)
       )
     ) {
       return
@@ -154,6 +177,7 @@ export const Workflow = () => {
       const lastNonEndIndex =
         currentWorkflow.connections!.findIndex(conn => conn[1] === '__end__') -
         1
+
       newConnections = [
         ...currentWorkflow.connections!.slice(0, lastNonEndIndex + 1),
         [currentWorkflow.connections![lastNonEndIndex]![1], currentAgent],
@@ -161,32 +185,73 @@ export const Workflow = () => {
       ]
     }
 
+    // Remove duplicates and self-referential connections
+    newConnections = newConnections.filter(
+      (conn, index, self) =>
+        index === self.findIndex(t => t[0] === conn[0] && t[1] === conn[1]) &&
+        conn[0] !== conn[1]
+    )
+
     addOrUpdateWorkflow(currentGraphId, newConnections)
+  }
+
+  const updateAgentConnection = (sourceId: string, targetId: string) => {
+    const { currentAgent, currentPrompt, verifyAgentExist, verifyPromptExist } =
+      getAgentInfo(sourceId, targetId)
+
+    if (
+      ['supervisorGraph', 'conditionalRouter', 'internalGeneralTool'].includes(
+        getSourceType(currentAgent)
+      ) ||
+      ['supervisorGraph', 'conditionalRouter', 'internalGeneralTool'].includes(
+        getSourceType(currentPrompt)
+      )
+    ) {
+      return
+    }
+
+    updateAgentPromptId({
+      name: currentAgent,
+      promptId: currentPrompt
+    })
+  }
+
+  const isConnectionRestrictedAgentPromptConnection = (
+    source: string,
+    target: string
+  ) => {
+    const { verifyAgentExist, currentAgent, verifyPromptExist } = getAgentInfo(
+      source,
+      target
+    )
+
+    console.log({ verifyAgentExist, verifyPromptExist })
+    if (!verifyAgentExist && !verifyPromptExist) return false
+    console.log({ checkPromptIdExists: currentAgent })
+    return checkPromptIdExists(currentAgent)
   }
 
   const onConnect = useCallback(
     (params: Connection) => {
       const { sourceHandle, targetHandle, source, target } = params
-
-      if (isConnectionRestricted(sourceHandle, targetHandle)) {
+      console.log({
+        'isConnectionRestricted(sourceHandle, targetHandle)':
+          isConnectionRestricted(sourceHandle, targetHandle),
+        'isConnectionRestrictedAgentPromptConnection(source, target)':
+          isConnectionRestrictedAgentPromptConnection(source, target),
+        params
+      })
+      if (
+        isConnectionRestricted(sourceHandle, targetHandle) ||
+        isConnectionRestrictedAgentPromptConnection(source, target)
+      ) {
         console.warn(`Connections ${sourceHandle} and ${targetHandle}`)
         return
       }
 
-      const sourceSplit = getSourceType(source)
-      const targetSplit = getSourceType(target)
+      updateWorkflowGraph(source, target)
 
-      const isWorkflowValid =
-        sourceSplit === 'supervisorGraph' ||
-        targetSplit === 'supervisorGraph' ||
-        targetSplit === 'chatAgentComponent' ||
-        targetSplit === 'toolAgentComponent' ||
-        sourceSplit === 'chatAgentComponent' ||
-        sourceSplit === 'toolAgentComponent'
-
-      if (isWorkflowValid) {
-        updateWorkflowGraph(source, target)
-      }
+      updateAgentConnection(source, target)
 
       setEdges(eds => addEdge(params, eds))
     },
@@ -216,8 +281,19 @@ export const Workflow = () => {
         position,
         data: { label: `${type} node` }
       }
-
       setNodes(nds => nds.concat(newNode))
+
+      if (type === 'toolAgentComponent' || type === 'chatAgentComponent') {
+        initializeAgentNode(newNode.id, type)
+      }
+
+      if (type === 'supervisorGraph') {
+        addOrUpdateWorkflow(newNode.id, [])
+      }
+
+      if (type === 'promptNode') {
+        createAndSetPrompt(newNode.id)
+      }
     },
     [screenToFlowPosition, type]
   )
@@ -229,9 +305,8 @@ export const Workflow = () => {
     if (type === 'remove' && 'id' in currentChanges) {
       const isSupervisorGraph =
         getSourceType(currentChanges.id) === SUPERVISOR_GRAPH_ID
-
       const isValidAgent = isAgent.includes(getSourceType(currentChanges.id))
-
+      const isValidPromptId = PROMPT_ID === getSourceType(currentChanges.id)
       if (isSupervisorGraph) {
         removeWorkflowFromGraph(currentChanges.id)
       }
@@ -239,8 +314,13 @@ export const Workflow = () => {
       if (isValidAgent) {
         removeAgent(currentChanges.id)
       }
+
+      if (isValidPromptId) {
+        removeAgentPromptAndDeletePrompt(currentChanges.id)
+      }
     }
-    return setNodes(eds => applyNodeChanges(changes, eds))
+
+    setNodes(eds => applyNodeChanges(changes, eds))
   }, [])
 
   return (

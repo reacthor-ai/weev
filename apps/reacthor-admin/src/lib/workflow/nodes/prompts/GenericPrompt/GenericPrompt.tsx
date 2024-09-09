@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import TextareaAutosize from 'react-textarea-autosize'
 import { Button, ButtonDefault } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,80 +11,83 @@ import {
   SelectValue
 } from '@/components/ui/select'
 import { XIcon } from 'lucide-react'
+import {
+  usePromptAddChatInput,
+  usePromptAddMessage,
+  usePromptDeleteChatInput,
+  usePromptDeleteMessage,
+  usePromptFormStates,
+  usePromptUpdateChatInput,
+  usePromptUpdateMessage
+} from '@/store/workflow/prompt/prompt'
 import { useNodeId } from '@/hooks/useNodeId'
-
-interface Message {
-  role: 'system' | 'ai' | 'user'
-  content: string
-}
-
-interface ChatInput {
-  key: string
-  value: string
-}
 
 export const GenericPromptNode: React.FC<EdgeProps> = ({ id }) => {
   const promptToChatAgentId = useNodeId(id)
+  const promptFormStates = usePromptFormStates()
 
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'system',
-      content:
-        'You are {agent_name}, a customer support specialist for {company_name}. Your primary goal is to assist users in resolving their inquiries or issues related to {company_name}.'
-    }
-  ])
+  // Extract the most recently added prompt to use in the UI
+  const { messages, chat_inputs } = promptFormStates[
+    promptFormStates.length - 1
+  ] || { messages: [], chat_inputs: {} }
 
-  const [chatInputs, setChatInputs] = useState<ChatInput[]>([
-    { key: 'agent_name', value: 'Nook' },
-    { key: 'company_name', value: 'Reacthor' }
-  ])
+  const addMessage = usePromptAddMessage()
+  const updateMessage = usePromptUpdateMessage()
+  const deleteMessage = usePromptDeleteMessage()
+  const updateChatInput = usePromptUpdateChatInput()
+  const deleteChatInput = usePromptDeleteChatInput()
+  const addChatInput = usePromptAddChatInput(promptFormStates.length - 1)
 
   const handleAddRole = () => {
-    setMessages([
-      ...messages,
-      {
-        role: 'system', // default role
-        content: ''
-      }
-    ])
+    addMessage(promptFormStates.length - 1)
   }
 
   const handleRoleChange = (
     index: number,
     newRole: 'system' | 'ai' | 'user'
   ) => {
-    const updatedMessages = messages.map((message, i) =>
-      i === index ? { ...message, role: newRole } : message
-    )
-    setMessages(updatedMessages)
+    updateMessage({
+      index: promptFormStates.length - 1,
+      messageIndex: index,
+      field: 'role',
+      value: newRole
+    })
   }
 
   const handleContentChange = (index: number, newContent: string) => {
-    const updatedMessages = messages.map((message, i) =>
-      i === index ? { ...message, content: newContent } : message
-    )
-    setMessages(updatedMessages)
+    updateMessage({
+      index: promptFormStates.length - 1,
+      messageIndex: index,
+      field: 'content',
+      value: newContent
+    })
   }
 
   const handleDeleteRole = (index: number) => {
-    const updatedMessages = messages.filter((_, i) => i !== index)
-    setMessages(updatedMessages)
+    deleteMessage({ index: promptFormStates.length - 1, messageIndex: index })
   }
 
   const handleAddChatInput = () => {
-    setChatInputs([...chatInputs, { key: '', value: '' }])
+    addChatInput()
   }
 
-  const handleChatInputChange = (index: number, key: string, value: string) => {
-    const updatedInputs = chatInputs.map((input, i) =>
-      i === index ? { key, value } : input
-    )
-    setChatInputs(updatedInputs)
+  const handleChatInputChange = (
+    prevKey: string,
+    newKey: string,
+    value: string
+  ) => {
+    const updatedChatInputs = { ...chat_inputs }
+    if (newKey !== prevKey) {
+      delete updatedChatInputs[prevKey]
+    }
+    updatedChatInputs[newKey] = value
+
+    // Update the chat input state
+    updateChatInput({ index: promptFormStates.length - 1, key: newKey, value })
   }
 
-  const handleDeleteChatInput = (index: number) => {
-    const updatedInputs = chatInputs.filter((_, i) => i !== index)
-    setChatInputs(updatedInputs)
+  const handleDeleteChatInput = (key: string) => {
+    deleteChatInput({ index: promptFormStates.length - 1, key })
   }
 
   return (
@@ -202,14 +205,14 @@ export const GenericPromptNode: React.FC<EdgeProps> = ({ id }) => {
           />
         </div>
         <div className="bg-[#3b3b3e] p-4 rounded-lg mb-6">
-          {chatInputs.map((input, index) => (
-            <div key={index} className="flex gap-4 items-center mb-4">
+          {Object.entries(chat_inputs).map(([key, value]) => (
+            <div key={key} className="flex gap-4 items-center mb-4">
               <label className="block text-sm font-medium flex-1">
                 <Input
                   type="text"
-                  value={input.key}
+                  value={key}
                   onChange={e =>
-                    handleChatInputChange(index, e.target.value, input.value)
+                    handleChatInputChange(key, e.target.value, value)
                   }
                   className="ml-2 p-2 rounded bg-[#1e1e23] text-white w-full"
                   placeholder="Input"
@@ -218,9 +221,9 @@ export const GenericPromptNode: React.FC<EdgeProps> = ({ id }) => {
               <label className="block text-sm font-medium flex-1">
                 <Input
                   type="text"
-                  value={input.value}
+                  value={value}
                   onChange={e =>
-                    handleChatInputChange(index, input.key, e.target.value)
+                    handleChatInputChange(key, key, e.target.value)
                   }
                   className="ml-2 p-2 rounded bg-[#1e1e23] text-white w-full"
                   placeholder="Value"
@@ -230,7 +233,7 @@ export const GenericPromptNode: React.FC<EdgeProps> = ({ id }) => {
                 className="text-red-500 bg-[#e11d48] hover:text-red-700"
                 variant="outline"
                 size="icon"
-                onClick={() => handleDeleteChatInput(index)}
+                onClick={() => handleDeleteChatInput(key)}
               >
                 <XIcon className="h-4 w-4" color="white" />
               </Button>

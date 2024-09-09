@@ -11,7 +11,7 @@ export const useNodeId = (id: string) => {
 
   useEffect(() => {
     setNodeId(generatedId)
-  }, [generatedId, setNodeId])
+  }, [generatedId])
 
   return generatedId
 }

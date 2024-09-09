@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useMemo, useState } from 'react'
 import { Button, ButtonDefault } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { EdgeProps, Handle, Position } from '@xyflow/react'
@@ -33,7 +33,6 @@ export const ChatAgentComponent: React.FC<
   const agentToGraphId = useNodeId(id)
 
   const agents = useAgents()
-
   const updateAgent = useUpdateAgent()
 
   const [llmType, setLlmType] = useState('ChatOpenAI')
@@ -50,25 +49,6 @@ export const ChatAgentComponent: React.FC<
   const newType =
     type === 'tools' ? 'ToolsAgentComponent' : 'ChatAgentComponent'
 
-  useEffect(() => {
-    const agentExists = agents.some(agent => agent.name === id)
-
-    if (!agentExists) {
-      const defaultAgent = {
-        id,
-        name: id,
-        type: newType,
-        llm: {
-          type: llmType,
-          model: 'gpt-4o-mini',
-          max_retries: 1
-        },
-        state_updates: stateUpdates
-      }
-      updateAgent(defaultAgent as any)
-    }
-  }, [id, agents, llmType, stateUpdates, updateAgent])
-
   const handleUpdateAgent = useCallback(() => {
     updateAgent({
       name: id,
@@ -78,7 +58,8 @@ export const ChatAgentComponent: React.FC<
         model: 'gpt-4o-mini',
         max_retries: 2
       },
-      state_updates: stateUpdates
+      state_updates: stateUpdates,
+      promptId: undefined
     })
   }, [id, llmType, stateUpdates, updateAgent, agents])
 
