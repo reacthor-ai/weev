@@ -144,11 +144,6 @@ export const Workflow = () => {
     if (!source) return false
     const sourceType = getSourceType(source)
     const targetType = getSourceType(target)
-    console.log({
-      sourceType,
-      targetType,
-      dd: (connectionRestrictions as any)[sourceType]
-    })
     return (connectionRestrictions as any)[sourceType]?.includes(targetType)
   }
 
@@ -225,22 +220,13 @@ export const Workflow = () => {
       target
     )
 
-    console.log({ verifyAgentExist, verifyPromptExist })
     if (!verifyAgentExist && !verifyPromptExist) return false
-    console.log({ checkPromptIdExists: currentAgent })
     return checkPromptIdExists(currentAgent)
   }
 
   const onConnect = useCallback(
     (params: Connection) => {
       const { sourceHandle, targetHandle, source, target } = params
-      console.log({
-        'isConnectionRestricted(sourceHandle, targetHandle)':
-          isConnectionRestricted(sourceHandle, targetHandle),
-        'isConnectionRestrictedAgentPromptConnection(source, target)':
-          isConnectionRestrictedAgentPromptConnection(source, target),
-        params
-      })
       if (
         isConnectionRestricted(sourceHandle, targetHandle) ||
         isConnectionRestrictedAgentPromptConnection(source, target)

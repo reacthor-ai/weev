@@ -1,7 +1,9 @@
-import HomePageV1 from '@/libs/HomePage'
+import Homev2 from '@/libs/Homev2/Homev2'
 
 export default function Home() {
   return (
-    <HomePageV1 />
+    <>
+      <Homev2 />
+    </>
   )
 }
