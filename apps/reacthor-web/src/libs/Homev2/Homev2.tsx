@@ -1,6 +1,4 @@
-import { redirect } from 'next/navigation'
 import Link from 'next/link'
-
 
 export default function Homev2() {
   return (
@@ -26,7 +24,9 @@ export default function Homev2() {
         </div>
         <div className="mt-8 space-y-4">
           <div>
-            <Link className='text-red-800' href={'https://play.reacthor.com'}><i>try?</i></Link>
+            <Link className="text-red-800" href={'https://play.reacthor.com'}>
+              <i>try?</i>
+            </Link>
           </div>
         </div>
       </div>
