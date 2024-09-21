@@ -1,3 +1,7 @@
+import { redirect } from 'next/navigation'
+import Link from 'next/link'
+
+
 export default function Homev2() {
   return (
     <div className="h-[100vh] min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-[#080A10] via-[#0C101A] to-[#101525] text-white font-sans from-40% via-50%">
@@ -22,7 +26,7 @@ export default function Homev2() {
         </div>
         <div className="mt-8 space-y-4">
           <div>
-            <button className="text-red-800">try?</button>
+            <Link className='text-red-800' href={'https://play.reacthor.com'}><i>try?</i></Link>
           </div>
         </div>
       </div>
