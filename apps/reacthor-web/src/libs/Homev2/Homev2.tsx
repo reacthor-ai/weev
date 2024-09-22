@@ -24,9 +24,9 @@ export default function Homev2() {
         </div>
         <div className="mt-8 space-y-4">
           <div>
-            <Link className="text-red-800" href={'https://play.reacthor.com'}>
+            <a className="text-red-800">
               <i>try?</i>
-            </Link>
+            </a>
           </div>
         </div>
       </div>
